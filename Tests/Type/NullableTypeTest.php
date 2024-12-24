@@ -41,4 +41,13 @@ class NullableTypeTest extends TestCase
         $type = new NullableType(Type::string());
         $this->assertFalse($type->wrappedTypeIsSatisfiedBy(static fn (Type $t): bool => 'int' === (string) $t));
     }
+
+    public function testAccepts()
+    {
+        $type = new NullableType(Type::int());
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertTrue($type->accepts(123));
+        $this->assertTrue($type->accepts(null));
+    }
 }

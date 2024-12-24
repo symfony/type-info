@@ -56,4 +56,24 @@ abstract class Type implements \Stringable
     {
         return false;
     }
+
+    /**
+     * Tells if the type (or one of its wrapped/composed parts) accepts the given $value.
+     */
+    public function accepts(mixed $value): bool
+    {
+        $specification = static function (Type $type) use (&$specification, $value): bool {
+            if ($type instanceof WrappingTypeInterface) {
+                return $type->wrappedTypeIsSatisfiedBy($specification);
+            }
+
+            if ($type instanceof CompositeTypeInterface) {
+                return $type->composedTypesAreSatisfiedBy($specification);
+            }
+
+            return $type->accepts($value);
+        };
+
+        return $this->isSatisfiedBy($specification);
+    }
 }

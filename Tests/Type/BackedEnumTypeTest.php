@@ -29,4 +29,12 @@ class BackedEnumTypeTest extends TestCase
     {
         $this->assertSame(DummyBackedEnum::class, (string) new BackedEnumType(DummyBackedEnum::class, Type::int()));
     }
+
+    public function testAccepts()
+    {
+        $type = new BackedEnumType(DummyBackedEnum::class, Type::int());
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertTrue($type->accepts(DummyBackedEnum::ONE));
+    }
 }

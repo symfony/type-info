@@ -77,4 +77,22 @@ class IntersectionTypeTest extends TestCase
         $type = new IntersectionType(Type::object(\DateTime::class), Type::object(\Iterator::class), Type::object(\Stringable::class));
         $this->assertSame(\sprintf('%s&%s&%s', \DateTime::class, \Iterator::class, \Stringable::class), (string) $type);
     }
+
+    public function testAccepts()
+    {
+        $type = new IntersectionType(Type::object(\Traversable::class), Type::object(\Countable::class));
+
+        $traversableAndCountable = new \ArrayObject();
+
+        $countable = new class implements \Countable {
+            public function count(): int
+            {
+                return 1;
+            }
+        };
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertFalse($type->accepts($countable));
+        $this->assertTrue($type->accepts($traversableAndCountable));
+    }
 }

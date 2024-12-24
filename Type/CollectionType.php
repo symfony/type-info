@@ -92,6 +92,31 @@ final class CollectionType extends Type implements WrappingTypeInterface
         return $this->getWrappedType()->isSatisfiedBy($specification);
     }
 
+    public function accepts(mixed $value): bool
+    {
+        if (!parent::accepts($value)) {
+            return false;
+        }
+
+        if ($this->isList() && (!\is_array($value) || !array_is_list($value))) {
+            return false;
+        }
+
+        $keyType = $this->getCollectionKeyType();
+        $valueType = $this->getCollectionValueType();
+
+        if (is_iterable($value)) {
+            foreach ($value as $k => $v) {
+                // key or value do not match
+                if (!$keyType->accepts($k) || !$valueType->accepts($v)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public function __toString(): string
     {
         return (string) $this->type;

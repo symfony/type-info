@@ -85,4 +85,13 @@ class UnionTypeTest extends TestCase
         $type = new UnionType(Type::int(), Type::string(), Type::intersection(Type::object(\DateTime::class), Type::object(\Iterator::class)));
         $this->assertSame(\sprintf('(%s&%s)|int|string', \DateTime::class, \Iterator::class), (string) $type);
     }
+
+    public function testAccepts()
+    {
+        $type = new UnionType(Type::int(), Type::bool());
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertTrue($type->accepts(123));
+        $this->assertTrue($type->accepts(false));
+    }
 }

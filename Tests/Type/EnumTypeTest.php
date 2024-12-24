@@ -21,4 +21,12 @@ class EnumTypeTest extends TestCase
     {
         $this->assertSame(DummyEnum::class, (string) new EnumType(DummyEnum::class));
     }
+
+    public function testAccepts()
+    {
+        $type = new EnumType(DummyEnum::class);
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertTrue($type->accepts(DummyEnum::ONE));
+    }
 }

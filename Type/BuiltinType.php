@@ -62,6 +62,26 @@ final class BuiltinType extends Type
         return \in_array($this->typeIdentifier, [TypeIdentifier::NULL, TypeIdentifier::MIXED]);
     }
 
+    public function accepts(mixed $value): bool
+    {
+        return match ($this->typeIdentifier) {
+            TypeIdentifier::ARRAY => \is_array($value),
+            TypeIdentifier::BOOL => \is_bool($value),
+            TypeIdentifier::CALLABLE => \is_callable($value),
+            TypeIdentifier::FALSE => false === $value,
+            TypeIdentifier::FLOAT => \is_float($value),
+            TypeIdentifier::INT => \is_int($value),
+            TypeIdentifier::ITERABLE => is_iterable($value),
+            TypeIdentifier::MIXED => true,
+            TypeIdentifier::NULL => null === $value,
+            TypeIdentifier::OBJECT => \is_object($value),
+            TypeIdentifier::RESOURCE => \is_resource($value),
+            TypeIdentifier::STRING => \is_string($value),
+            TypeIdentifier::TRUE => true === $value,
+            default => false,
+        };
+    }
+
     public function __toString(): string
     {
         return $this->typeIdentifier->value;

@@ -45,4 +45,12 @@ class GenericTypeTest extends TestCase
         $type = new GenericType(Type::builtin(TypeIdentifier::ITERABLE), Type::bool());
         $this->assertFalse($type->wrappedTypeIsSatisfiedBy(static fn (Type $t): bool => 'array' === (string) $t));
     }
+
+    public function testAccepts()
+    {
+        $type = new GenericType(Type::object(self::class), Type::string());
+
+        $this->assertFalse($type->accepts('string'));
+        $this->assertTrue($type->accepts($this));
+    }
 }

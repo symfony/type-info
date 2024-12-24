@@ -88,4 +88,41 @@ class CollectionTypeTest extends TestCase
         $type = new CollectionType(new GenericType(Type::builtin(TypeIdentifier::ARRAY), Type::string(), Type::bool()));
         $this->assertEquals('array<string,bool>', (string) $type);
     }
+
+    public function testAccepts()
+    {
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ARRAY), Type::string(), Type::bool()));
+
+        $this->assertFalse($type->accepts(new \ArrayObject(['foo' => true, 'bar' => true])));
+
+        $this->assertTrue($type->accepts(['foo' => true, 'bar' => true]));
+        $this->assertFalse($type->accepts(['foo' => true, 'bar' => 123]));
+        $this->assertFalse($type->accepts([1 => true]));
+
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ARRAY), Type::int(), Type::bool()));
+
+        $this->assertTrue($type->accepts([1 => true]));
+        $this->assertFalse($type->accepts(['foo' => true]));
+
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ARRAY), Type::int(), Type::bool()), isList: true);
+
+        $this->assertTrue($type->accepts([0 => true, 1 => false]));
+        $this->assertFalse($type->accepts([0 => true, 2 => false]));
+
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::string(), Type::bool()));
+
+        $this->assertTrue($type->accepts(new \ArrayObject(['foo' => true, 'bar' => true])));
+        $this->assertFalse($type->accepts(new \ArrayObject(['foo' => true, 'bar' => 123])));
+        $this->assertFalse($type->accepts(new \ArrayObject([1 => true])));
+
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::int(), Type::bool()));
+
+        $this->assertTrue($type->accepts(new \ArrayObject([1 => true])));
+        $this->assertFalse($type->accepts(new \ArrayObject(['foo' => true])));
+
+        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::int(), Type::bool()));
+
+        $this->assertTrue($type->accepts(new \ArrayObject([0 => true, 1 => false])));
+        $this->assertFalse($type->accepts(new \ArrayObject([0 => true, 1 => 'string'])));
+    }
 }

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.3
+---
+
+ * Add `Type::accepts()` method
+
 7.2
 ---
 

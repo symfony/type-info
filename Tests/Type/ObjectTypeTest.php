@@ -35,4 +35,12 @@ class ObjectTypeTest extends TestCase
 
         $this->assertTrue((new ObjectType(self::class))->isIdentifiedBy('array', 'object'));
     }
+
+    public function testAccepts()
+    {
+        $this->assertFalse((new ObjectType(self::class))->accepts('string'));
+        $this->assertFalse((new ObjectType(self::class))->accepts(new \stdClass()));
+        $this->assertTrue((new ObjectType(parent::class))->accepts($this));
+        $this->assertTrue((new ObjectType(self::class))->accepts($this));
+    }
 }
