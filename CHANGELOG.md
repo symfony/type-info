@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
  * Add `Type::accepts()` method
+ * Add `TypeFactoryTrait::fromValue()` method
 
 7.2
 ---

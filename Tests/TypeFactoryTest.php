@@ -206,4 +206,61 @@ class TypeFactoryTest extends TestCase
             Type::nullable(Type::union(Type::int(), Type::string(), Type::null())),
         );
     }
+
+    /**
+     * @dataProvider createFromValueProvider
+     */
+    public function testCreateFromValue(Type $expected, mixed $value)
+    {
+        $this->assertEquals($expected, Type::fromValue($value));
+    }
+
+    /**
+     * @return iterable<array{0: Type, 1: mixed}>
+     */
+    public static function createFromValueProvider(): iterable
+    {
+        // builtin
+        yield [Type::null(), null];
+        yield [Type::true(), true];
+        yield [Type::false(), false];
+        yield [Type::int(), 1];
+        yield [Type::float(), 1.1];
+        yield [Type::string(), 'string'];
+        yield [Type::callable(), strtoupper(...)];
+        yield [Type::resource(), fopen('php://temp', 'r')];
+
+        // object
+        yield [Type::object(\DateTimeImmutable::class), new \DateTimeImmutable()];
+        yield [Type::object(), new \stdClass()];
+
+        // collection
+        $arrayAccess = new class implements \ArrayAccess {
+            public function offsetExists(mixed $offset): bool
+            {
+                return true;
+            }
+
+            public function offsetGet(mixed $offset): mixed
+            {
+                return null;
+            }
+
+            public function offsetSet(mixed $offset, mixed $value): void
+            {
+            }
+
+            public function offsetUnset(mixed $offset): void
+            {
+            }
+        };
+
+        yield [Type::list(Type::int()), [1, 2, 3]];
+        yield [Type::dict(Type::bool()), ['a' => true, 'b' => false]];
+        yield [Type::array(Type::string()), [1 => 'foo', 'bar' => 'baz']];
+        yield [Type::array(Type::nullable(Type::bool()), Type::int()), [1 => true, 2 => null, 3 => false]];
+        yield [Type::collection(Type::object(\ArrayIterator::class), Type::mixed(), Type::union(Type::int(), Type::string())), new \ArrayIterator()];
+        yield [Type::collection(Type::object(\Generator::class), Type::string(), Type::int()), (fn (): iterable => yield 'string')()];
+        yield [Type::collection(Type::object($arrayAccess::class)), $arrayAccess];
+    }
 }
