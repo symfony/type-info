@@ -6,6 +6,8 @@ CHANGELOG
 
  * Add `Type::accepts()` method
  * Add `TypeFactoryTrait::fromValue()` method
+ * Deprecate constructing a `CollectionType` instance as a list that is not an array
+ * Deprecate the third `$asList` argument of `TypeFactoryTrait::iterable()`, use `TypeFactoryTrait::list()` instead
 
 7.2
 ---

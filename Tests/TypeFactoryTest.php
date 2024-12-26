@@ -12,6 +12,7 @@
 namespace Symfony\Component\TypeInfo\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyBackedEnum;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyEnum;
 use Symfony\Component\TypeInfo\Type;
@@ -29,6 +30,8 @@ use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class TypeFactoryTest extends TestCase
 {
+    use ExpectUserDeprecationMessageTrait;
+
     public function testCreateBuiltin()
     {
         $this->assertEquals(new BuiltinType(TypeIdentifier::INT), Type::builtin(TypeIdentifier::INT));
@@ -135,15 +138,6 @@ class TypeFactoryTest extends TestCase
                 new BuiltinType(TypeIdentifier::BOOL),
             )),
             Type::iterable(Type::bool(), Type::string()),
-        );
-
-        $this->assertEquals(
-            new CollectionType(new GenericType(
-                new BuiltinType(TypeIdentifier::ITERABLE),
-                new BuiltinType(TypeIdentifier::INT),
-                new BuiltinType(TypeIdentifier::BOOL),
-            ), isList: true),
-            Type::iterable(Type::bool(), Type::int(), true),
         );
     }
 
@@ -262,5 +256,14 @@ class TypeFactoryTest extends TestCase
         yield [Type::collection(Type::object(\ArrayIterator::class), Type::mixed(), Type::union(Type::int(), Type::string())), new \ArrayIterator()];
         yield [Type::collection(Type::object(\Generator::class), Type::string(), Type::int()), (fn (): iterable => yield 'string')()];
         yield [Type::collection(Type::object($arrayAccess::class)), $arrayAccess];
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testCannotCreateIterableList()
+    {
+        $this->expectUserDeprecationMessage('Since symfony/type-info 7.3: The third argument of "Symfony\Component\TypeInfo\TypeFactoryTrait::iterable()" is deprecated. Use the "Symfony\Component\TypeInfo\Type::list()" method to create a list instead.');
+        Type::iterable(key: Type::int(), asList: true);
     }
 }

@@ -171,6 +171,10 @@ trait TypeFactoryTrait
      */
     public static function iterable(?Type $value = null, ?Type $key = null, bool $asList = false): CollectionType
     {
+        if ($asList) {
+            trigger_deprecation('symfony/type-info', '7.3', 'The third argument of "%s()" is deprecated. Use the "%s::list()" method to create a list instead.', __METHOD__, self::class);
+        }
+
         return self::collection(self::builtin(TypeIdentifier::ITERABLE), $value, $key, $asList);
     }
 

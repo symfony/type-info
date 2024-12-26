@@ -12,6 +12,7 @@
 namespace Symfony\Component\TypeInfo\Tests\Type;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\TypeInfo\Exception\InvalidArgumentException;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type\CollectionType;
@@ -20,6 +21,8 @@ use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class CollectionTypeTest extends TestCase
 {
+    use ExpectUserDeprecationMessageTrait;
+
     public function testCannotCreateInvalidBuiltinType()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -121,5 +124,14 @@ class CollectionTypeTest extends TestCase
         $this->assertFalse($type->accepts(new \ArrayObject(['foo' => true])));
         $this->assertTrue($type->accepts(new \ArrayObject([0 => true, 1 => false])));
         $this->assertFalse($type->accepts(new \ArrayObject([0 => true, 1 => 'string'])));
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testCannotCreateIterableList()
+    {
+        $this->expectUserDeprecationMessage('Since symfony/type-info 7.3: Creating a "Symfony\Component\TypeInfo\Type\CollectionType" that is a list and not an array is deprecated and will throw a "Symfony\Component\TypeInfo\Exception\InvalidArgumentException" in 8.0.');
+        new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::bool()), isList: true);
     }
 }
