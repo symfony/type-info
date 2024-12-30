@@ -223,7 +223,19 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if ($node instanceof UnionTypeNode) {
-            return Type::union(...array_map(fn (TypeNode $t): Type => $this->getTypeFromNode($t, $typeContext), $node->types));
+            $types = [];
+
+            foreach ($node->types as $nodeType) {
+                $type = $this->getTypeFromNode($nodeType, $typeContext);
+
+                if ($type instanceof BuiltinType && TypeIdentifier::MIXED === $type->getTypeIdentifier()) {
+                    return Type::mixed();
+                }
+
+                $types[] = $type;
+            }
+
+            return Type::union(...$types);
         }
 
         if ($node instanceof IntersectionTypeNode) {

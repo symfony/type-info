@@ -155,6 +155,8 @@ class StringTypeResolverTest extends TestCase
 
         // union
         yield [Type::union(Type::int(), Type::string()), 'int|string'];
+        yield [Type::mixed(), 'int|mixed'];
+        yield [Type::mixed(), 'mixed|int'];
 
         // intersection
         yield [Type::intersection(Type::object(\DateTime::class), Type::object(\Stringable::class)), \DateTime::class.'&'.\Stringable::class];
