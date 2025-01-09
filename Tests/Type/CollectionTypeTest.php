@@ -119,9 +119,6 @@ class CollectionTypeTest extends TestCase
 
         $this->assertTrue($type->accepts(new \ArrayObject([1 => true])));
         $this->assertFalse($type->accepts(new \ArrayObject(['foo' => true])));
-
-        $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::int(), Type::bool()));
-
         $this->assertTrue($type->accepts(new \ArrayObject([0 => true, 1 => false])));
         $this->assertFalse($type->accepts(new \ArrayObject([0 => true, 1 => 'string'])));
     }
