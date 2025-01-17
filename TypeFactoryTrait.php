@@ -340,4 +340,99 @@ trait TypeFactoryTrait
 
         return new NullableType($type);
     }
+
+    public static function fromValue(mixed $value): Type
+    {
+        $type = match ($value) {
+            null => self::null(),
+            true => self::true(),
+            false => self::false(),
+            default => null,
+        };
+
+        if (null !== $type) {
+            return $type;
+        }
+
+        if (\is_callable($value)) {
+            return Type::callable();
+        }
+
+        if (\is_resource($value)) {
+            return Type::resource();
+        }
+
+        $type = match (get_debug_type($value)) {
+            TypeIdentifier::INT->value => self::int(),
+            TypeIdentifier::FLOAT->value => self::float(),
+            TypeIdentifier::STRING->value => self::string(),
+            default => null,
+        };
+
+        if (null !== $type) {
+            return $type;
+        }
+
+        $type = match (true) {
+            \is_object($value) => \stdClass::class === $value::class ? self::object() : self::object($value::class),
+            \is_array($value) => self::builtin(TypeIdentifier::ARRAY),
+            default => null,
+        };
+
+        if (null === $type) {
+            return Type::mixed();
+        }
+
+        if (is_iterable($value)) {
+            /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> $keyTypes */
+            $keyTypes = [];
+
+            /** @var list<Type|null> $valueTypes */
+            $valueTypes = [];
+
+            $i = 0;
+
+            foreach ($value as $k => $v) {
+                $keyTypes[] = self::fromValue($k);
+                $keyTypes = array_unique($keyTypes);
+
+                $valueTypes[] = self::fromValue($v);
+                $valueTypes = array_unique($valueTypes);
+            }
+
+            if ([] !== $keyTypes) {
+                $keyTypes = array_values($keyTypes);
+                $keyType = \count($keyTypes) > 1 ? self::union(...$keyTypes) : $keyTypes[0];
+
+                $valueType = null;
+                foreach ($valueTypes as &$v) {
+                    if ($v->isIdentifiedBy(TypeIdentifier::MIXED)) {
+                        $valueType = Type::mixed();
+
+                        break;
+                    }
+
+                    if ($v->isIdentifiedBy(TypeIdentifier::TRUE, TypeIdentifier::FALSE)) {
+                        $v = Type::bool();
+                    }
+                }
+
+                if (!$valueType) {
+                    $valueTypes = array_values(array_unique($valueTypes));
+                    $valueType = \count($valueTypes) > 1 ? self::union(...$valueTypes) : $valueTypes[0];
+                }
+            } else {
+                $keyType = Type::union(Type::int(), Type::string());
+                $valueType = Type::mixed();
+            }
+
+            return self::collection($type, $valueType, $keyType, \is_array($value) && array_is_list($value));
+        }
+
+        if ($value instanceof \ArrayAccess) {
+            return self::collection($type);
+        }
+
+        return $type;
+    }
 }
