@@ -10,6 +10,14 @@ final class DummyWithPhpDoc
     public mixed $arrayOfDummies = [];
 
     /**
+     * @param bool $promoted
+     */
+    public function __construct(
+        public mixed $promoted,
+    ) {
+    }
+
+    /**
      * @param Dummy $dummy
      *
      * @return Dummy

@@ -28,6 +28,7 @@ class PhpDocAwareReflectionTypeResolverTest extends TestCase
         $reflection = new \ReflectionClass(DummyWithPhpDoc::class);
 
         $this->assertEquals(Type::array(Type::object(Dummy::class)), $resolver->resolve($reflection->getProperty('arrayOfDummies')));
+        $this->assertEquals(Type::bool(), $resolver->resolve($reflection->getProperty('promoted')));
         $this->assertEquals(Type::object(Dummy::class), $resolver->resolve($reflection->getMethod('getNextDummy')));
         $this->assertEquals(Type::object(Dummy::class), $resolver->resolve($reflection->getMethod('getNextDummy')->getParameters()[0]));
     }
