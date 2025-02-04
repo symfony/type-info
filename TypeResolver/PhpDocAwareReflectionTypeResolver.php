@@ -65,7 +65,7 @@ final readonly class PhpDocAwareReflectionTypeResolver implements TypeResolverIn
         }
 
         $docComment = match (true) {
-            $subject instanceof \ReflectionProperty => $subject->getDocComment(),
+            $subject instanceof \ReflectionProperty => $subject->isPromoted() ? $subject->getDeclaringClass()?->getConstructor()?->getDocComment() : $subject->getDocComment(),
             $subject instanceof \ReflectionParameter => $subject->getDeclaringFunction()->getDocComment(),
             $subject instanceof \ReflectionFunctionAbstract => $subject->getDocComment(),
         };
@@ -77,7 +77,7 @@ final readonly class PhpDocAwareReflectionTypeResolver implements TypeResolverIn
         $typeContext ??= $this->typeContextFactory->createFromReflection($subject);
 
         $tagName = match (true) {
-            $subject instanceof \ReflectionProperty => '@var',
+            $subject instanceof \ReflectionProperty => $subject->isPromoted() ? '@param' : '@var',
             $subject instanceof \ReflectionParameter => '@param',
             $subject instanceof \ReflectionFunctionAbstract => '@return',
         };
