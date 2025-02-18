@@ -275,6 +275,10 @@ final class StringTypeResolver implements TypeResolverInterface
             return Type::template($identifier, $typeContext->templates[$identifier]);
         }
 
+        if (isset($typeContext?->typeAliases[$identifier])) {
+            return $typeContext->typeAliases[$identifier];
+        }
+
         throw new \DomainException(\sprintf('Unhandled "%s" identifier.', $identifier));
     }
 }
