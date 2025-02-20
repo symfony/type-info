@@ -205,5 +205,9 @@ class TypeFactoryTest extends TestCase
             new NullableType(new UnionType(new BuiltinType(TypeIdentifier::INT), new BuiltinType(TypeIdentifier::STRING))),
             Type::nullable(Type::union(Type::int(), Type::string(), Type::null())),
         );
+        $this->assertEquals(
+            new NullableType(new UnionType(new BuiltinType(TypeIdentifier::INT), new BuiltinType(TypeIdentifier::STRING))),
+            Type::union(Type::nullable(Type::int()), Type::string()),
+        );
     }
 }

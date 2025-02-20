@@ -266,6 +266,13 @@ trait TypeFactoryTrait
         $isNullable = fn (Type $type): bool => $type instanceof BuiltinType && TypeIdentifier::NULL === $type->getTypeIdentifier();
 
         foreach ($types as $type) {
+            if ($type instanceof NullableType) {
+                $nullableUnion = true;
+                $unionTypes[] = $type->getWrappedType();
+
+                continue;
+            }
+
             if ($type instanceof UnionType) {
                 foreach ($type->getTypes() as $unionType) {
                     if ($isNullable($type)) {
