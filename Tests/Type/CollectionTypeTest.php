@@ -134,4 +134,26 @@ class CollectionTypeTest extends TestCase
         $this->expectUserDeprecationMessage('Since symfony/type-info 7.3: Creating a "Symfony\Component\TypeInfo\Type\CollectionType" that is a list and not an array is deprecated and will throw a "Symfony\Component\TypeInfo\Exception\InvalidArgumentException" in 8.0.');
         new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ITERABLE), Type::bool()), isList: true);
     }
+
+    public function testMergeCollectionValueTypes()
+    {
+        $this->assertEquals(Type::int(), CollectionType::mergeCollectionValueTypes([Type::int()]));
+        $this->assertEquals(Type::union(Type::int(), Type::string()), CollectionType::mergeCollectionValueTypes([Type::int(), Type::string()]));
+
+        $this->assertEquals(Type::mixed(), CollectionType::mergeCollectionValueTypes([Type::int(), Type::mixed()]));
+
+        $this->assertEquals(Type::union(Type::int(), Type::true()), CollectionType::mergeCollectionValueTypes([Type::int(), Type::true()]));
+        $this->assertEquals(Type::bool(), CollectionType::mergeCollectionValueTypes([Type::true(), Type::false(), Type::true()]));
+
+        $this->assertEquals(Type::union(Type::object(\Stringable::class), Type::object(\Countable::class)), CollectionType::mergeCollectionValueTypes([Type::object(\Stringable::class), Type::object(\Countable::class)]));
+        $this->assertEquals(Type::object(), CollectionType::mergeCollectionValueTypes([Type::object(\Stringable::class), Type::object()]));
+    }
+
+    public function testCannotMergeEmptyCollectionValueTypes()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The $types cannot be empty.');
+
+        CollectionType::mergeCollectionValueTypes([]);
+    }
 }

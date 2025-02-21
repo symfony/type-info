@@ -9,6 +9,7 @@ CHANGELOG
  * Deprecate constructing a `CollectionType` instance as a list that is not an array
  * Deprecate the third `$asList` argument of `TypeFactoryTrait::iterable()`, use `TypeFactoryTrait::list()` instead
  * Add type alias support in `TypeContext` and `StringTypeResolver`
+ * Add `CollectionType::mergeCollectionValueTypes()` method
 
 7.2
 ---
