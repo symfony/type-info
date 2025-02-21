@@ -10,6 +10,7 @@ CHANGELOG
  * Deprecate the third `$asList` argument of `TypeFactoryTrait::iterable()`, use `TypeFactoryTrait::list()` instead
  * Add type alias support in `TypeContext` and `StringTypeResolver`
  * Add `CollectionType::mergeCollectionValueTypes()` method
+ * Add `ArrayShapeType` to represent the exact shape of an array
 
 7.2
 ---

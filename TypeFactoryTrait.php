@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\TypeInfo;
 
+use Symfony\Component\TypeInfo\Type\ArrayShapeType;
 use Symfony\Component\TypeInfo\Type\BackedEnumType;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
 use Symfony\Component\TypeInfo\Type\CollectionType;
@@ -192,6 +193,18 @@ trait TypeFactoryTrait
     public static function dict(?Type $value = null): CollectionType
     {
         return self::array($value, self::string());
+    }
+
+    /**
+     * @param array<array{type: Type, optional?: bool}|Type> $shape
+     */
+    public static function arrayShape(array $shape): ArrayShapeType
+    {
+        return new ArrayShapeType(array_map(static function (array|Type $item): array {
+            return $item instanceof Type
+                ? ['type' => $item, 'optional' => false]
+                : ['type' => $item['type'], 'optional' => $item['optional'] ?? false];
+        }, $shape));
     }
 
     /**
