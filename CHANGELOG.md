@@ -11,6 +11,7 @@ CHANGELOG
  * Add type alias support in `TypeContext` and `StringTypeResolver`
  * Add `CollectionType::mergeCollectionValueTypes()` method
  * Add `ArrayShapeType` to represent the exact shape of an array
+ * Add `Type::traverse()` method
 
 7.2
 ---
