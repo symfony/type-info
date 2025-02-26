@@ -398,44 +398,24 @@ trait TypeFactoryTrait
             /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> $keyTypes */
             $keyTypes = [];
 
-            /** @var list<Type|null> $valueTypes */
+            /** @var list<Type> $valueTypes */
             $valueTypes = [];
 
             $i = 0;
 
             foreach ($value as $k => $v) {
                 $keyTypes[] = self::fromValue($k);
-                $keyTypes = array_unique($keyTypes);
-
                 $valueTypes[] = self::fromValue($v);
-                $valueTypes = array_unique($valueTypes);
             }
 
-            if ([] !== $keyTypes) {
-                $keyTypes = array_values($keyTypes);
+            if ($keyTypes) {
+                $keyTypes = array_values(array_unique($keyTypes));
                 $keyType = \count($keyTypes) > 1 ? self::union(...$keyTypes) : $keyTypes[0];
-
-                $valueType = null;
-                foreach ($valueTypes as &$v) {
-                    if ($v->isIdentifiedBy(TypeIdentifier::MIXED)) {
-                        $valueType = Type::mixed();
-
-                        break;
-                    }
-
-                    if ($v->isIdentifiedBy(TypeIdentifier::TRUE, TypeIdentifier::FALSE)) {
-                        $v = Type::bool();
-                    }
-                }
-
-                if (!$valueType) {
-                    $valueTypes = array_values(array_unique($valueTypes));
-                    $valueType = \count($valueTypes) > 1 ? self::union(...$valueTypes) : $valueTypes[0];
-                }
             } else {
                 $keyType = Type::union(Type::int(), Type::string());
-                $valueType = Type::mixed();
             }
+
+            $valueType = $valueTypes ? CollectionType::mergeCollectionValueTypes($valueTypes) : Type::mixed();
 
             return self::collection($type, $valueType, $keyType, \is_array($value) && array_is_list($value));
         }

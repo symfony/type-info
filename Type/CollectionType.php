@@ -52,6 +52,59 @@ final class CollectionType extends Type implements WrappingTypeInterface
         }
     }
 
+    /**
+     * @param array<Type> $types
+     */
+    public static function mergeCollectionValueTypes(array $types): Type
+    {
+        if (!$types) {
+            throw new InvalidArgumentException('The $types cannot be empty.');
+        }
+
+        $normalizedTypes = [];
+        $boolTypes = [];
+        $objectTypes = [];
+
+        foreach ($types as $t) {
+            // cannot create an union with a standalone type
+            if ($t->isIdentifiedBy(TypeIdentifier::MIXED)) {
+                return Type::mixed();
+            }
+
+            if ($t->isIdentifiedBy(TypeIdentifier::TRUE, TypeIdentifier::FALSE, TypeIdentifier::BOOL)) {
+                $boolTypes[] = $t;
+
+                continue;
+            }
+
+            if ($t->isIdentifiedBy(TypeIdentifier::OBJECT)) {
+                $objectTypes[] = $t;
+
+                continue;
+            }
+
+            $normalizedTypes[] = $t;
+        }
+
+        $boolTypes = array_unique($boolTypes);
+        $objectTypes = array_unique($objectTypes);
+
+        // cannot create an union with either "true" and "false", "bool" must be used instead
+        if ($boolTypes) {
+            $normalizedTypes[] = \count($boolTypes) > 1 ? Type::bool() : $boolTypes[0];
+        }
+
+        // cannot create a union with either "object" and a class name, "object" must be used instead
+        if ($objectTypes) {
+            $hasBuiltinObjectType = array_filter($objectTypes, static fn (Type $t): bool => $t->isSatisfiedBy(static fn (Type $t): bool => $t instanceof BuiltinType));
+            $normalizedTypes = [...$normalizedTypes, ...($hasBuiltinObjectType ? [Type::object()] : $objectTypes)];
+        }
+
+        $normalizedTypes = array_values(array_unique($normalizedTypes));
+
+        return \count($normalizedTypes) > 1 ? self::union(...$normalizedTypes) : $normalizedTypes[0];
+    }
+
     public function getWrappedType(): Type
     {
         return $this->type;
