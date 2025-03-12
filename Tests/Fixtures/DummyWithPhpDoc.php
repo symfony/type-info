@@ -11,9 +11,18 @@ final class DummyWithPhpDoc
 
     /**
      * @param bool $promoted
+     * @param bool $promotedVarAndParam
      */
     public function __construct(
         public mixed $promoted,
+        /**
+         * @var string
+         */
+        public mixed $promotedVar,
+        /**
+         * @var string
+         */
+        public mixed $promotedVarAndParam,
     ) {
     }
 
