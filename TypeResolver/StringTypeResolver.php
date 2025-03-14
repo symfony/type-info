@@ -110,7 +110,12 @@ final class StringTypeResolver implements TypeResolverInterface
                 ];
             }
 
-            return Type::arrayShape($shape);
+            return Type::arrayShape(
+                $shape,
+                $node->sealed,
+                $node->unsealedType?->keyType ? $this->getTypeFromNode($node->unsealedType->keyType, $typeContext) : null,
+                $node->unsealedType?->valueType ? $this->getTypeFromNode($node->unsealedType->valueType, $typeContext) : null,
+            );
         }
 
         if ($node instanceof ObjectShapeNode) {

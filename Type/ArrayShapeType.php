@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\TypeInfo\Type;
 
+use Symfony\Component\TypeInfo\Exception\InvalidArgumentException;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -31,8 +32,11 @@ final class ArrayShapeType extends CollectionType
     /**
      * @param array<array{type: Type, optional: bool}> $shape
      */
-    public function __construct(array $shape)
-    {
+    public function __construct(
+        array $shape,
+        private readonly ?Type $extraKeyType = null,
+        private readonly ?Type $extraValueType = null,
+    ) {
         $keyTypes = [];
         $valueTypes = [];
 
@@ -56,6 +60,14 @@ final class ArrayShapeType extends CollectionType
         ksort($sortedShape);
 
         $this->shape = $sortedShape;
+
+        if ($this->extraKeyType xor $this->extraValueType) {
+            throw new InvalidArgumentException(\sprintf('You must provide a value for "$%s" when "$%s" is provided.', $this->extraKeyType ? 'extraValueType' : 'extraKeyType', $this->extraKeyType ? 'extraKeyType' : 'extraValueType'));
+        }
+
+        if ($extraKeyType && !$extraKeyType->isIdentifiedBy(TypeIdentifier::INT, TypeIdentifier::STRING)) {
+            throw new InvalidArgumentException(\sprintf('"%s" is not a valid array key type.', (string) $extraKeyType));
+        }
     }
 
     /**
@@ -64,6 +76,21 @@ final class ArrayShapeType extends CollectionType
     public function getShape(): array
     {
         return $this->shape;
+    }
+
+    public function isSealed(): bool
+    {
+        return null === $this->extraValueType;
+    }
+
+    public function getExtraKeyType(): ?Type
+    {
+        return $this->extraKeyType;
+    }
+
+    public function getExtraValueType(): ?Type
+    {
+        return $this->extraKeyType;
     }
 
     public function accepts(mixed $value): bool
@@ -80,11 +107,12 @@ final class ArrayShapeType extends CollectionType
 
         foreach ($value as $key => $itemValue) {
             $valueType = $this->shape[$key]['type'] ?? false;
-            if (!$valueType) {
+
+            if ($valueType && !$valueType->accepts($itemValue)) {
                 return false;
             }
 
-            if (!$valueType->accepts($itemValue)) {
+            if (!$valueType && ($this->isSealed() || !$this->extraKeyType->accepts($key) || !$this->extraValueType->accepts($itemValue))) {
                 return false;
             }
         }
@@ -103,6 +131,12 @@ final class ArrayShapeType extends CollectionType
             }
 
             $items[] = \sprintf('%s: %s', $itemKey, $value['type']);
+        }
+
+        if (!$this->isSealed()) {
+            $items[] = $this->extraKeyType->isIdentifiedBy(TypeIdentifier::INT) && $this->extraKeyType->isIdentifiedBy(TypeIdentifier::STRING) && $this->extraValueType->isIdentifiedBy(TypeIdentifier::MIXED)
+                ? '...'
+                : \sprintf('...<%s, %s>', $this->extraKeyType, $this->extraValueType);
         }
 
         return \sprintf('array{%s}', implode(', ', $items));

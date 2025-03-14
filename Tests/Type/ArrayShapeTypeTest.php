@@ -12,11 +12,37 @@
 namespace Symfony\Component\TypeInfo\Tests\Type;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\TypeInfo\Exception\InvalidArgumentException;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type\ArrayShapeType;
 
 class ArrayShapeTypeTest extends TestCase
 {
+    /**
+     * @dataProvider cannotConstructWithInvalidExtraDataProvider
+     */
+    public function testCannotConstructWithInvalidExtra(string $expectedMessage, ?Type $extraKeyType, ?Type $extraValueType)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        new ArrayShapeType(
+            shape: [1 => ['type' => Type::bool(), 'optional' => false]],
+            extraKeyType: $extraKeyType,
+            extraValueType: $extraValueType,
+        );
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: ?Type, 2: ?Type}>
+     */
+    public static function cannotConstructWithInvalidExtraDataProvider(): iterable
+    {
+        yield ['You must provide as value for "$extraValueType" when "$extraKeyType" is provided.', Type::string(), null];
+        yield ['You must provide as value for "$extraKeyType" when "$extraValueType" is provided.', null, Type::string()];
+        yield ['"float" is not a valid array key type.', Type::float(), Type::string()];
+    }
+
     public function testGetCollectionKeyType()
     {
         $type = new ArrayShapeType([
@@ -76,6 +102,17 @@ class ArrayShapeTypeTest extends TestCase
 
         $this->assertTrue($type->accepts(['foo' => true]));
         $this->assertTrue($type->accepts(['foo' => true, 'bar' => 'string']));
+
+        $type = new ArrayShapeType(
+            shape: ['foo' => ['type' => Type::bool()]],
+            extraKeyType: Type::string(),
+            extraValueType: Type::string(),
+        );
+
+        $this->assertTrue($type->accepts(['foo' => true, 'other' => 'string']));
+        $this->assertTrue($type->accepts(['other' => 'string', 'foo' => true]));
+        $this->assertFalse($type->accepts(['other' => 1, 'foo' => true]));
+        $this->assertFalse($type->accepts(['other' => 'string', 'foo' => 'foo']));
     }
 
     public function testToString()
@@ -94,5 +131,19 @@ class ArrayShapeTypeTest extends TestCase
             'bar' => ['type' => Type::string(), 'optional' => true],
         ]);
         $this->assertSame("array{'bar'?: string, 'foo': bool}", (string) $type);
+
+        $type = new ArrayShapeType(
+            shape: ['foo' => ['type' => Type::bool()]],
+            extraKeyType: Type::union(Type::int(), Type::string()),
+            extraValueType: Type::mixed(),
+        );
+        $this->assertSame("array{'foo': bool, ...}", (string) $type);
+
+        $type = new ArrayShapeType(
+            shape: ['foo' => ['type' => Type::bool()]],
+            extraKeyType: Type::int(),
+            extraValueType: Type::string(),
+        );
+        $this->assertSame("array{'foo': bool, ...<int, string>}", (string) $type);
     }
 }
