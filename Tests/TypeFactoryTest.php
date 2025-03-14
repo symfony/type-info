@@ -16,6 +16,7 @@ use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyBackedEnum;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyEnum;
 use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\Type\ArrayShapeType;
 use Symfony\Component\TypeInfo\Type\BackedEnumType;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
 use Symfony\Component\TypeInfo\Type\CollectionType;
@@ -203,6 +204,12 @@ class TypeFactoryTest extends TestCase
             new NullableType(new UnionType(new BuiltinType(TypeIdentifier::INT), new BuiltinType(TypeIdentifier::STRING))),
             Type::union(Type::nullable(Type::int()), Type::string()),
         );
+    }
+
+    public function testCreateArrayShape()
+    {
+        $this->assertEquals(new ArrayShapeType(['foo' => ['type' => Type::bool(), 'optional' => true]]), Type::arrayShape(['foo' => ['type' => Type::bool(), 'optional' => true]]));
+        $this->assertEquals(new ArrayShapeType(['foo' => ['type' => Type::bool(), 'optional' => false]]), Type::arrayShape(['foo' => Type::bool()]));
     }
 
     /**

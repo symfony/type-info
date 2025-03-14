@@ -74,7 +74,8 @@ class StringTypeResolverTest extends TestCase
         yield [Type::list(Type::bool()), 'bool[]'];
 
         // array shape
-        yield [Type::array(), 'array{0: true, 1: false}'];
+        yield [Type::arrayShape(['foo' => Type::true(), 1 => Type::false()]), 'array{foo: true, 1: false}'];
+        yield [Type::arrayShape(['foo' => ['type' => Type::bool(), 'optional' => true]]), 'array{foo?: bool}'];
 
         // object shape
         yield [Type::object(), 'object{foo: true, bar: false}'];
