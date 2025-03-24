@@ -29,6 +29,14 @@ abstract class Type implements \Stringable
      */
     public function isSatisfiedBy(callable $specification): bool
     {
+        if ($this instanceof WrappingTypeInterface && $this->wrappedTypeIsSatisfiedBy($specification)) {
+            return true;
+        }
+
+        if ($this instanceof CompositeTypeInterface && $this->composedTypesAreSatisfiedBy($specification)) {
+            return true;
+        }
+
         return $specification($this);
     }
 
@@ -37,19 +45,17 @@ abstract class Type implements \Stringable
      */
     public function isIdentifiedBy(TypeIdentifier|string ...$identifiers): bool
     {
-        $specification = static function (Type $type) use (&$specification, $identifiers): bool {
-            if ($type instanceof WrappingTypeInterface) {
-                return $type->wrappedTypeIsSatisfiedBy($specification);
-            }
+        $specification = static fn (Type $type): bool => $type->isIdentifiedBy(...$identifiers);
 
-            if ($type instanceof CompositeTypeInterface) {
-                return $type->composedTypesAreSatisfiedBy($specification);
-            }
+        if ($this instanceof WrappingTypeInterface && $this->wrappedTypeIsSatisfiedBy($specification)) {
+            return true;
+        }
 
-            return $type->isIdentifiedBy(...$identifiers);
-        };
+        if ($this instanceof CompositeTypeInterface && $this->composedTypesAreSatisfiedBy($specification)) {
+            return true;
+        }
 
-        return $this->isSatisfiedBy($specification);
+        return false;
     }
 
     public function isNullable(): bool
