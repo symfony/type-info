@@ -38,8 +38,8 @@ class ArrayShapeTypeTest extends TestCase
      */
     public static function cannotConstructWithInvalidExtraDataProvider(): iterable
     {
-        yield ['You must provide as value for "$extraValueType" when "$extraKeyType" is provided.', Type::string(), null];
-        yield ['You must provide as value for "$extraKeyType" when "$extraValueType" is provided.', null, Type::string()];
+        yield ['You must provide a value for "$extraValueType" when "$extraKeyType" is provided.', Type::string(), null];
+        yield ['You must provide a value for "$extraKeyType" when "$extraValueType" is provided.', null, Type::string()];
         yield ['"float" is not a valid array key type.', Type::float(), Type::string()];
     }
 
