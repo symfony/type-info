@@ -198,13 +198,22 @@ trait TypeFactoryTrait
     /**
      * @param array<array{type: Type, optional?: bool}|Type> $shape
      */
-    public static function arrayShape(array $shape): ArrayShapeType
+    public static function arrayShape(array $shape, bool $sealed = true, ?Type $extraKeyType = null, ?Type $extraValueType = null): ArrayShapeType
     {
-        return new ArrayShapeType(array_map(static function (array|Type $item): array {
+        $shape = array_map(static function (array|Type $item): array {
             return $item instanceof Type
                 ? ['type' => $item, 'optional' => false]
                 : ['type' => $item['type'], 'optional' => $item['optional'] ?? false];
-        }, $shape));
+        }, $shape);
+
+        if ($extraKeyType || $extraValueType) {
+            $sealed = false;
+        }
+
+        $extraKeyType ??= !$sealed ? Type::union(Type::int(), Type::string()) : null;
+        $extraValueType ??= !$sealed ? Type::mixed() : null;
+
+        return new ArrayShapeType($shape, $extraKeyType, $extraValueType);
     }
 
     /**

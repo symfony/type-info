@@ -210,6 +210,16 @@ class TypeFactoryTest extends TestCase
     {
         $this->assertEquals(new ArrayShapeType(['foo' => ['type' => Type::bool(), 'optional' => true]]), Type::arrayShape(['foo' => ['type' => Type::bool(), 'optional' => true]]));
         $this->assertEquals(new ArrayShapeType(['foo' => ['type' => Type::bool(), 'optional' => false]]), Type::arrayShape(['foo' => Type::bool()]));
+        $this->assertEquals(new ArrayShapeType(
+            shape: ['foo' => ['type' => Type::bool(), 'optional' => false]],
+            extraKeyType: Type::union(Type::int(), Type::string()),
+            extraValueType: Type::mixed(),
+        ), Type::arrayShape(['foo' => Type::bool()], sealed: false));
+        $this->assertEquals(new ArrayShapeType(
+            shape: ['foo' => ['type' => Type::bool(), 'optional' => false]],
+            extraKeyType: Type::string(),
+            extraValueType: Type::bool(),
+        ), Type::arrayShape(['foo' => Type::bool()], extraKeyType: Type::string(), extraValueType: Type::bool()));
     }
 
     /**
