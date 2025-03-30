@@ -59,7 +59,7 @@ class ArrayShapeTypeTest extends TestCase
             1 => ['type' => Type::bool(), 'optional' => false],
             'foo' => ['type' => Type::bool(), 'optional' => false],
         ]);
-        $this->assertEquals(Type::union(Type::int(), Type::string()), $type->getCollectionKeyType());
+        $this->assertEquals(Type::arrayKey(), $type->getCollectionKeyType());
     }
 
     public function testGetCollectionValueType()
@@ -134,7 +134,7 @@ class ArrayShapeTypeTest extends TestCase
 
         $type = new ArrayShapeType(
             shape: ['foo' => ['type' => Type::bool()]],
-            extraKeyType: Type::union(Type::int(), Type::string()),
+            extraKeyType: Type::arrayKey(),
             extraValueType: Type::mixed(),
         );
         $this->assertSame("array{'foo': bool, ...}", (string) $type);

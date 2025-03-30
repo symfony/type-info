@@ -153,7 +153,7 @@ trait TypeFactoryTrait
     public static function collection(BuiltinType|ObjectType|GenericType $type, ?Type $value = null, ?Type $key = null, bool $asList = false): CollectionType
     {
         if (!$type instanceof GenericType && (null !== $value || null !== $key)) {
-            $type = self::generic($type, $key ?? self::union(self::int(), self::string()), $value ?? self::mixed());
+            $type = self::generic($type, $key ?? self::arrayKey(), $value ?? self::mixed());
         }
 
         return new CollectionType($type, $asList);
@@ -210,10 +210,15 @@ trait TypeFactoryTrait
             $sealed = false;
         }
 
-        $extraKeyType ??= !$sealed ? Type::union(Type::int(), Type::string()) : null;
+        $extraKeyType ??= !$sealed ? Type::arrayKey() : null;
         $extraValueType ??= !$sealed ? Type::mixed() : null;
 
         return new ArrayShapeType($shape, $extraKeyType, $extraValueType);
+    }
+
+    public static function arrayKey(): UnionType
+    {
+        return self::union(self::int(), self::string());
     }
 
     /**
@@ -434,7 +439,7 @@ trait TypeFactoryTrait
                 $keyTypes = array_values(array_unique($keyTypes));
                 $keyType = \count($keyTypes) > 1 ? self::union(...$keyTypes) : $keyTypes[0];
             } else {
-                $keyType = Type::union(Type::int(), Type::string());
+                $keyType = Type::arrayKey();
             }
 
             $valueType = $valueTypes ? CollectionType::mergeCollectionValueTypes($valueTypes) : Type::mixed();

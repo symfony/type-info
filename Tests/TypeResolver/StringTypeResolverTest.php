@@ -137,7 +137,7 @@ class StringTypeResolverTest extends TestCase
         yield [Type::never(), 'never-return'];
         yield [Type::never(), 'never-returns'];
         yield [Type::never(), 'no-return'];
-        yield [Type::union(Type::int(), Type::string()), 'array-key'];
+        yield [Type::arrayKey(), 'array-key'];
         yield [Type::union(Type::int(), Type::float(), Type::string(), Type::bool()), 'scalar'];
         yield [Type::union(Type::int(), Type::float()), 'number'];
         yield [Type::union(Type::int(), Type::float(), Type::string()), 'numeric'];

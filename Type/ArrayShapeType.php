@@ -49,7 +49,7 @@ final class ArrayShapeType extends CollectionType
             $keyTypes = array_values(array_unique($keyTypes));
             $keyType = \count($keyTypes) > 1 ? self::union(...$keyTypes) : $keyTypes[0];
         } else {
-            $keyType = Type::union(Type::int(), Type::string());
+            $keyType = Type::arrayKey();
         }
 
         $valueType = $valueTypes ? CollectionType::mergeCollectionValueTypes($valueTypes) : Type::mixed();
