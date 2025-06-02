@@ -199,32 +199,85 @@ final class TypeContextFactory
         }
 
         $aliases = [];
-        foreach ($this->getPhpDocNode($rawDocNode)->getTagsByName('@psalm-type') + $this->getPhpDocNode($rawDocNode)->getTagsByName('@phpstan-type') as $tag) {
-            if (!$tag->value instanceof TypeAliasTagValueNode) {
-                continue;
-            }
-
-            $aliases[$tag->value->alias] = $this->stringTypeResolver->resolve((string) $tag->value->type, $typeContext);
-        }
+        $resolvedAliases = [];
 
         foreach ($this->getPhpDocNode($rawDocNode)->getTagsByName('@psalm-import-type') + $this->getPhpDocNode($rawDocNode)->getTagsByName('@phpstan-import-type') as $tag) {
             if (!$tag->value instanceof TypeAliasImportTagValueNode) {
                 continue;
             }
 
-            /** @var ObjectType $importedType */
-            $importedType = $this->stringTypeResolver->resolve((string) $tag->value->importedFrom, $typeContext);
-            $importedTypeContext = $this->createFromClassName($importedType->getClassName());
-
-            $typeAlias = $importedTypeContext->typeAliases[$tag->value->importedAlias] ?? null;
-            if (!$typeAlias) {
-                throw new LogicException(\sprintf('Cannot find any "%s" type alias in "%s".', $tag->value->importedAlias, $importedType->getClassName()));
+            $importedFromType = $this->stringTypeResolver->resolve((string) $tag->value->importedFrom, $typeContext);
+            if (!$importedFromType instanceof ObjectType) {
+                throw new LogicException(\sprintf('Type alias "%s" is not imported from a valid class name.', $tag->value->importedAlias));
             }
 
-            $aliases[$tag->value->importedAs ?? $tag->value->importedAlias] = $typeAlias;
+            $importedFromContext = $this->createFromClassName($importedFromType->getClassName());
+
+            $typeAlias = $importedFromContext->typeAliases[$tag->value->importedAlias] ?? null;
+            if (!$typeAlias) {
+                throw new LogicException(\sprintf('Cannot find any "%s" type alias in "%s".', $tag->value->importedAlias, $importedFromType->getClassName()));
+            }
+
+            $resolvedAliases[$tag->value->importedAs ?? $tag->value->importedAlias] = $typeAlias;
         }
 
-        return $aliases;
+        foreach ($this->getPhpDocNode($rawDocNode)->getTagsByName('@psalm-type') + $this->getPhpDocNode($rawDocNode)->getTagsByName('@phpstan-type') as $tag) {
+            if (!$tag->value instanceof TypeAliasTagValueNode) {
+                continue;
+            }
+
+            $aliases[$tag->value->alias] = (string) $tag->value->type;
+        }
+
+        return $this->resolveTypeAliases($aliases, $resolvedAliases, $typeContext);
+    }
+
+    /**
+     * @param array<string, string> $toResolve
+     * @param array<string, Type>   $resolved
+     *
+     * @return array<string, Type>
+     */
+    private function resolveTypeAliases(array $toResolve, array $resolved, TypeContext $typeContext): array
+    {
+        if (!$toResolve) {
+            return [];
+        }
+
+        $typeContext = new TypeContext(
+            $typeContext->calledClassName,
+            $typeContext->declaringClassName,
+            $typeContext->namespace,
+            $typeContext->uses,
+            $typeContext->templates,
+            $typeContext->typeAliases + $resolved,
+        );
+
+        $succeeded = false;
+        $lastFailure = null;
+        $lastFailingAlias = null;
+
+        foreach ($toResolve as $alias => $type) {
+            try {
+                $resolved[$alias] = $this->stringTypeResolver->resolve($type, $typeContext);
+                unset($toResolve[$alias]);
+                $succeeded = true;
+            } catch (UnsupportedException $lastFailure) {
+                $lastFailingAlias = $alias;
+            }
+        }
+
+        // nothing has succeeded, the result won't be different from the
+        // previous one, we can stop here.
+        if (!$succeeded) {
+            throw new LogicException(\sprintf('Cannot resolve "%s" type alias.', $lastFailingAlias), 0, $lastFailure);
+        }
+
+        if ($toResolve) {
+            return $this->resolveTypeAliases($toResolve, $resolved, $typeContext);
+        }
+
+        return $resolved;
     }
 
     private function getPhpDocNode(string $rawDocNode): PhpDocNode
