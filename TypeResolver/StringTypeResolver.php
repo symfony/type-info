@@ -38,6 +38,7 @@ use PHPStan\PhpDocParser\ParserConfig;
 use Symfony\Component\TypeInfo\Exception\InvalidArgumentException;
 use Symfony\Component\TypeInfo\Exception\UnsupportedException;
 use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\Type\BackedEnumType;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
 use Symfony\Component\TypeInfo\Type\CollectionType;
 use Symfony\Component\TypeInfo\Type\GenericType;
@@ -182,6 +183,28 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if ($node instanceof GenericTypeNode) {
+            if ($node->type instanceof IdentifierTypeNode && 'value-of' === $node->type->name) {
+                $type = $this->getTypeFromNode($node->genericTypes[0], $typeContext);
+                if ($type instanceof BackedEnumType) {
+                    return $type->getBackingType();
+                }
+
+                if ($type instanceof CollectionType) {
+                    return $type->getCollectionValueType();
+                }
+
+                throw new \DomainException(\sprintf('"%s" is not a valid type for "value-of".', $node->genericTypes[0]));
+            }
+
+            if ($node->type instanceof IdentifierTypeNode && 'key-of' === $node->type->name) {
+                $type = $this->getTypeFromNode($node->genericTypes[0], $typeContext);
+                if ($type instanceof CollectionType) {
+                    return $type->getCollectionKeyType();
+                }
+
+                throw new \DomainException(\sprintf('"%s" is not a valid type for "key-of".', $node->genericTypes[0]));
+            }
+
             $type = $this->getTypeFromNode($node->type, $typeContext);
 
             // handle integer ranges as simple integers
