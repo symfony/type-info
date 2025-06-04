@@ -79,6 +79,7 @@ class StringTypeResolverTest extends TestCase
         yield [Type::arrayShape(['foo' => Type::bool()], sealed: false), 'array{foo: bool, ...}'];
         yield [Type::arrayShape(['foo' => Type::bool()], extraKeyType: Type::int(), extraValueType: Type::string()), 'array{foo: bool, ...<int, string>}'];
         yield [Type::arrayShape(['foo' => Type::bool()], extraValueType: Type::int()), 'array{foo: bool, ...<int>}'];
+        yield [Type::arrayShape(['foo' => Type::union(Type::bool(), Type::float(), Type::int(), Type::null(), Type::string()), 'bar' => Type::string()]), 'array{foo: scalar|null, bar: string}'];
 
         // object shape
         yield [Type::object(), 'object{foo: true, bar: false}'];
@@ -157,6 +158,9 @@ class StringTypeResolverTest extends TestCase
         yield [Type::generic(Type::object(\DateTime::class), Type::string(), Type::bool()), \DateTime::class.'<string, bool>'];
         yield [Type::generic(Type::object(\DateTime::class), Type::generic(Type::object(\Stringable::class), Type::bool())), \sprintf('%s<%s<bool>>', \DateTime::class, \Stringable::class)];
         yield [Type::int(), 'int<0, 100>'];
+        yield [Type::string(), \sprintf('value-of<%s>', DummyBackedEnum::class)];
+        yield [Type::int(), 'key-of<list<bool>>'];
+        yield [Type::bool(), 'value-of<list<bool>>'];
 
         // union
         yield [Type::union(Type::int(), Type::string()), 'int|string'];
@@ -216,9 +220,21 @@ class StringTypeResolverTest extends TestCase
         $this->resolver->resolve('parent');
     }
 
-    public function testCannotUnknownIdentifier()
+    public function testCannotResolveUnknownIdentifier()
     {
         $this->expectException(UnsupportedException::class);
         $this->resolver->resolve('unknown');
+    }
+
+    public function testCannotResolveKeyOfInvalidType()
+    {
+        $this->expectException(UnsupportedException::class);
+        $this->resolver->resolve('key-of<int>');
+    }
+
+    public function testCannotResolveValueOfInvalidType()
+    {
+        $this->expectException(UnsupportedException::class);
+        $this->resolver->resolve('value-of<int>');
     }
 }
