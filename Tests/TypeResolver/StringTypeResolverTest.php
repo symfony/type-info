@@ -19,6 +19,7 @@ use Symfony\Component\TypeInfo\Tests\Fixtures\Dummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyBackedEnum;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyCollection;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyEnum;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithConstants;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplates;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeContext\TypeContext;
@@ -89,6 +90,19 @@ class StringTypeResolverTest extends TestCase
         yield [Type::null(), 'null'];
         yield [Type::string(), '"string"'];
         yield [Type::true(), 'true'];
+
+        // const fetch
+        yield [Type::string(), DummyWithConstants::class.'::DUMMY_STRING_*'];
+        yield [Type::string(), DummyWithConstants::class.'::DUMMY_STRING_A'];
+        yield [Type::int(), DummyWithConstants::class.'::DUMMY_INT_*'];
+        yield [Type::int(), DummyWithConstants::class.'::DUMMY_INT_A'];
+        yield [Type::float(), DummyWithConstants::class.'::DUMMY_FLOAT_*'];
+        yield [Type::bool(), DummyWithConstants::class.'::DUMMY_TRUE_*'];
+        yield [Type::bool(), DummyWithConstants::class.'::DUMMY_FALSE_*'];
+        yield [Type::null(), DummyWithConstants::class.'::DUMMY_NULL_*'];
+        yield [Type::array(), DummyWithConstants::class.'::DUMMY_ARRAY_*'];
+        yield [Type::enum(DummyEnum::class, Type::string()), DummyWithConstants::class.'::DUMMY_ENUM_*'];
+        yield [Type::union(Type::string(), Type::int(), Type::float(), Type::bool(), Type::null(), Type::array(), Type::enum(DummyEnum::class, Type::string())), DummyWithConstants::class.'::DUMMY_MIX_*'];
 
         // identifiers
         yield [Type::bool(), 'bool'];
