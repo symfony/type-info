@@ -16,6 +16,7 @@ use Symfony\Component\TypeInfo\Tests\Fixtures\AbstractDummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\Dummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplates;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithUses;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithUsesWindowsLineEndings;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeContext\TypeContextFactory;
 use Symfony\Component\TypeInfo\TypeResolver\StringTypeResolver;
@@ -80,6 +81,24 @@ class TypeContextFactoryTest extends TestCase
         $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionProperty(DummyWithUses::class, 'createdAt'))->uses);
         $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionMethod(DummyWithUses::class, 'setCreatedAt'))->uses);
         $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionParameter([DummyWithUses::class, 'setCreatedAt'], 'createdAt'))->uses);
+    }
+
+    public function testCollectUsesWindowsLineEndings()
+    {
+        self::assertSame(\count(file(__DIR__.'/../Fixtures/DummyWithUsesWindowsLineEndings.php')), substr_count(file_get_contents(__DIR__.'/../Fixtures/DummyWithUsesWindowsLineEndings.php'), "\r\n"));
+
+        $uses = [
+            'Type' => Type::class,
+            \DateTimeInterface::class => '\\'.\DateTimeInterface::class,
+            'DateTime' => '\\'.\DateTimeImmutable::class,
+        ];
+
+        $this->assertSame($uses, $this->typeContextFactory->createFromClassName(DummyWithUsesWindowsLineEndings::class)->uses);
+
+        $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithUsesWindowsLineEndings::class))->uses);
+        $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionProperty(DummyWithUsesWindowsLineEndings::class, 'createdAt'))->uses);
+        $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionMethod(DummyWithUsesWindowsLineEndings::class, 'setCreatedAt'))->uses);
+        $this->assertEquals($uses, $this->typeContextFactory->createFromReflection(new \ReflectionParameter([DummyWithUsesWindowsLineEndings::class, 'setCreatedAt'], 'createdAt'))->uses);
     }
 
     public function testCollectTemplates()
