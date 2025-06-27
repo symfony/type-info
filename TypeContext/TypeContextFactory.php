@@ -123,7 +123,7 @@ final class TypeContextFactory
             return [];
         }
 
-        if (false === $lines = @file($fileName)) {
+        if (false === $lines = @file($fileName, \FILE_IGNORE_NEW_LINES)) {
             throw new RuntimeException(\sprintf('Unable to read file "%s".', $fileName));
         }
 
@@ -133,7 +133,7 @@ final class TypeContextFactory
         foreach ($lines as $line) {
             if (str_starts_with($line, 'use ')) {
                 $inUseSection = true;
-                $use = explode(' as ', substr($line, 4, -2), 2);
+                $use = explode(' as ', substr($line, 4, -1), 2);
 
                 $alias = 1 === \count($use) ? substr($use[0], false !== ($p = strrpos($use[0], '\\')) ? 1 + $p : 0) : $use[1];
                 $uses[$alias] = $use[0];
