@@ -18,6 +18,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
@@ -119,6 +120,47 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if ($node instanceof ConstTypeNode) {
+            if ($node->constExpr instanceof ConstFetchNode) {
+                $className = match (strtolower($node->constExpr->className)) {
+                    'self' => $typeContext->getDeclaringClass(),
+                    'static' => $typeContext->getCalledClass(),
+                    'parent' => $typeContext->getParentClass(),
+                    default => $node->constExpr->className,
+                };
+
+                if (!class_exists($className)) {
+                    return Type::mixed();
+                }
+
+                $types = [];
+
+                foreach ((new \ReflectionClass($className))->getReflectionConstants() as $const) {
+                    if (preg_match('/^'.str_replace('\*', '.*', preg_quote($node->constExpr->name, '/')).'$/', $const->getName())) {
+                        $constValue = $const->getValue();
+
+                        $types[] = match (true) {
+                            true === $constValue,
+                            false === $constValue => Type::bool(),
+                            null === $constValue => Type::null(),
+                            \is_string($constValue) => Type::string(),
+                            \is_int($constValue) => Type::int(),
+                            \is_float($constValue) => Type::float(),
+                            \is_array($constValue) => Type::array(),
+                            $constValue instanceof \UnitEnum => Type::enum($constValue::class),
+                            default => Type::mixed(),
+                        };
+                    }
+                }
+
+                $types = array_unique($types);
+
+                if (\count($types) > 2) {
+                    return Type::union(...$types);
+                }
+
+                return $types[0] ?? Type::null();
+            }
+
             return match ($node->constExpr::class) {
                 ConstExprArrayNode::class => Type::array(),
                 ConstExprFalseNode::class => Type::false(),
