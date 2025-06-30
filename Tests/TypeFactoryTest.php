@@ -278,6 +278,7 @@ class TypeFactoryTest extends TestCase
             }
         };
 
+        yield [Type::array(Type::mixed()), []];
         yield [Type::list(Type::int()), [1, 2, 3]];
         yield [Type::dict(Type::bool()), ['a' => true, 'b' => false]];
         yield [Type::array(Type::string()), [1 => 'foo', 'bar' => 'baz']];
