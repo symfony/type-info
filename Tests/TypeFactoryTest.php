@@ -254,6 +254,8 @@ class TypeFactoryTest extends TestCase
         yield [Type::object(\DateTimeImmutable::class), new \DateTimeImmutable()];
         yield [Type::object(), new \stdClass()];
         yield [Type::list(Type::object()), [new \stdClass(), new \DateTimeImmutable()]];
+        yield [Type::enum(DummyEnum::class), DummyEnum::ONE];
+        yield [Type::enum(DummyBackedEnum::class), DummyBackedEnum::ONE];
 
         // collection
         $arrayAccess = new class implements \ArrayAccess {

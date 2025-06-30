@@ -412,6 +412,7 @@ trait TypeFactoryTrait
         }
 
         $type = match (true) {
+            \is_object($value) && is_subclass_of($value::class, \UnitEnum::class) => Type::enum($value::class),
             \is_object($value) => \stdClass::class === $value::class ? self::object() : self::object($value::class),
             \is_array($value) => self::builtin(TypeIdentifier::ARRAY),
             default => null,
@@ -427,8 +428,6 @@ trait TypeFactoryTrait
 
             /** @var list<Type> $valueTypes */
             $valueTypes = [];
-
-            $i = 0;
 
             foreach ($value as $k => $v) {
                 $keyTypes[] = self::fromValue($k);
