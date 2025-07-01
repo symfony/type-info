@@ -149,29 +149,11 @@ final class StringTypeResolver implements TypeResolverInterface
 
                 foreach ((new \ReflectionClass($className))->getReflectionConstants() as $const) {
                     if (preg_match('/^'.str_replace('\*', '.*', preg_quote($node->constExpr->name, '/')).'$/', $const->getName())) {
-                        $constValue = $const->getValue();
-
-                        $types[] = match (true) {
-                            true === $constValue,
-                            false === $constValue => Type::bool(),
-                            null === $constValue => Type::null(),
-                            \is_string($constValue) => Type::string(),
-                            \is_int($constValue) => Type::int(),
-                            \is_float($constValue) => Type::float(),
-                            \is_array($constValue) => Type::array(),
-                            $constValue instanceof \UnitEnum => Type::enum($constValue::class),
-                            default => Type::mixed(),
-                        };
+                        $types[] = Type::fromValue($const->getValue());
                     }
                 }
 
-                $types = array_unique($types);
-
-                if (\count($types) > 2) {
-                    return Type::union(...$types);
-                }
-
-                return $types[0] ?? Type::null();
+                return CollectionType::mergeCollectionValueTypes($types);
             }
 
             return match ($node->constExpr::class) {

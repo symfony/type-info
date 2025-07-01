@@ -103,12 +103,12 @@ class StringTypeResolverTest extends TestCase
         yield [Type::int(), DummyWithConstants::class.'::DUMMY_INT_*'];
         yield [Type::int(), DummyWithConstants::class.'::DUMMY_INT_A'];
         yield [Type::float(), DummyWithConstants::class.'::DUMMY_FLOAT_*'];
-        yield [Type::bool(), DummyWithConstants::class.'::DUMMY_TRUE_*'];
-        yield [Type::bool(), DummyWithConstants::class.'::DUMMY_FALSE_*'];
+        yield [Type::true(), DummyWithConstants::class.'::DUMMY_TRUE_*'];
+        yield [Type::false(), DummyWithConstants::class.'::DUMMY_FALSE_*'];
         yield [Type::null(), DummyWithConstants::class.'::DUMMY_NULL_*'];
-        yield [Type::array(), DummyWithConstants::class.'::DUMMY_ARRAY_*'];
+        yield [Type::array(null, Type::union(Type::int(), Type::string())), DummyWithConstants::class.'::DUMMY_ARRAY_*'];
         yield [Type::enum(DummyEnum::class, Type::string()), DummyWithConstants::class.'::DUMMY_ENUM_*'];
-        yield [Type::union(Type::string(), Type::int(), Type::float(), Type::bool(), Type::null(), Type::array(), Type::enum(DummyEnum::class, Type::string())), DummyWithConstants::class.'::DUMMY_MIX_*'];
+        yield [Type::union(Type::enum(DummyEnum::class, Type::string()), Type::array(Type::mixed(), Type::union(Type::int(), Type::string())), Type::string(), Type::int(), Type::float(), Type::bool(), Type::null()), DummyWithConstants::class.'::DUMMY_MIX_*'];
 
         // identifiers
         yield [Type::bool(), 'bool'];
