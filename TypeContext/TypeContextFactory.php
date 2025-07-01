@@ -241,7 +241,7 @@ final class TypeContextFactory
     private function resolveTypeAliases(array $toResolve, array $resolved, TypeContext $typeContext): array
     {
         if (!$toResolve) {
-            return [];
+            return $resolved;
         }
 
         $typeContext = new TypeContext(
