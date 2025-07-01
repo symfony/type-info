@@ -412,6 +412,7 @@ trait TypeFactoryTrait
         }
 
         $type = match (true) {
+            $value instanceof \UnitEnum => Type::enum($value::class),
             \is_object($value) => \stdClass::class === $value::class ? self::object() : self::object($value::class),
             \is_array($value) => self::builtin(TypeIdentifier::ARRAY),
             default => null,
@@ -428,8 +429,6 @@ trait TypeFactoryTrait
             /** @var list<Type> $valueTypes */
             $valueTypes = [];
 
-            $i = 0;
-
             foreach ($value as $k => $v) {
                 $keyTypes[] = self::fromValue($k);
                 $valueTypes[] = self::fromValue($v);
@@ -444,7 +443,7 @@ trait TypeFactoryTrait
 
             $valueType = $valueTypes ? CollectionType::mergeCollectionValueTypes($valueTypes) : Type::mixed();
 
-            return self::collection($type, $valueType, $keyType, \is_array($value) && array_is_list($value));
+            return self::collection($type, $valueType, $keyType, \is_array($value) && [] !== $value && array_is_list($value));
         }
 
         if ($value instanceof \ArrayAccess) {
