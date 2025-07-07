@@ -58,6 +58,17 @@ final class DummyWithTypeAliases
 }
 
 /**
+ * @phpstan-import-type CustomInt from DummyWithPhpDoc
+ */
+final class DummyWithImportedOnlyTypeAliases
+{
+    /**
+     * @var CustomInt
+     */
+    public mixed $externalAlias;
+}
+
+/**
  * @phpstan-type Foo = array{0: Bar}
  * @phpstan-type Bar = array{0: Foo}
  */

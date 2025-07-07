@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\TypeInfo\Exception\LogicException;
 use Symfony\Component\TypeInfo\Tests\Fixtures\AbstractDummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\Dummy;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithImportedOnlyTypeAliases;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAliasImport;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithRecursiveTypeAliases;
@@ -179,6 +180,10 @@ class TypeContextFactoryTest extends TestCase
             'PsalmCustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
             'PsalmAliasedCustomInt' => Type::int(),
         ], $this->typeContextFactory->createFromReflection(new \ReflectionProperty(DummyWithTypeAliases::class, 'localAlias'))->typeAliases);
+
+        $this->assertEquals([
+            'CustomInt' => Type::int(),
+        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithImportedOnlyTypeAliases::class))->typeAliases);
     }
 
     public function testDoNotCollectTypeAliasesWhenToStringTypeResolver()
