@@ -59,7 +59,7 @@ final class BuiltinType extends Type
 
     public function isNullable(): bool
     {
-        return \in_array($this->typeIdentifier, [TypeIdentifier::NULL, TypeIdentifier::MIXED]);
+        return \in_array($this->typeIdentifier, [TypeIdentifier::NULL, TypeIdentifier::MIXED], true);
     }
 
     public function accepts(mixed $value): bool
