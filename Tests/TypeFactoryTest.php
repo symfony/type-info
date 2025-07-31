@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\TypeInfo\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
@@ -226,9 +227,7 @@ class TypeFactoryTest extends TestCase
         $this->assertEquals(new UnionType(Type::int(), Type::string()), Type::arrayKey());
     }
 
-    /**
-     * @dataProvider createFromValueProvider
-     */
+    #[DataProvider('createFromValueProvider')]
     public function testCreateFromValue(Type $expected, mixed $value)
     {
         $this->assertEquals($expected, Type::fromValue($value));
