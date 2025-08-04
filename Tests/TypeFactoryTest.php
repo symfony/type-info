@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\TypeInfo\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyBackedEnum;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyEnum;
@@ -224,9 +225,7 @@ class TypeFactoryTest extends TestCase
         $this->assertEquals(new UnionType(Type::int(), Type::string()), Type::arrayKey());
     }
 
-    /**
-     * @dataProvider createFromValueProvider
-     */
+    #[DataProvider('createFromValueProvider')]
     public function testCreateFromValue(Type $expected, mixed $value)
     {
         $this->assertEquals($expected, Type::fromValue($value));
