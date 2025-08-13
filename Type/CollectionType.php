@@ -179,6 +179,10 @@ class CollectionType extends Type implements WrappingTypeInterface
 
     public function __toString(): string
     {
+        if ($this->isList && $this->type->isIdentifiedBy(TypeIdentifier::ARRAY)) {
+            return 'list<'.$this->getCollectionValueType().'>';
+        }
+
         return (string) $this->type;
     }
 }
