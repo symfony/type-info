@@ -89,7 +89,7 @@ class CollectionTypeTest extends TestCase
         $this->assertEquals('array<bool>', (string) $type);
 
         $type = new CollectionType(new GenericType(Type::builtin(TypeIdentifier::ARRAY), Type::string(), Type::bool()));
-        $this->assertEquals('array<string,bool>', (string) $type);
+        $this->assertEquals('array<string, bool>', (string) $type);
 
         $type = new CollectionType(Type::generic(Type::builtin(TypeIdentifier::ARRAY), Type::bool()), isList: true);
         $this->assertEquals('list<bool>', (string) $type);
