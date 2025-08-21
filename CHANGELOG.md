@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.4
+---
+
+ * Add extra type alias support in `TypeContext` and `StringTypeResolver`
+
 7.3
 ---
 

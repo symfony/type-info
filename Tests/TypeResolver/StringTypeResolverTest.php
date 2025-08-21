@@ -201,6 +201,13 @@ class StringTypeResolverTest extends TestCase
         yield [Type::string(), 'CustomString', $typeContextFactory->createFromClassName(DummyWithTypeAliases::class)];
     }
 
+    public function testResolveWithExtraTypeAlias()
+    {
+        $resolver = new StringTypeResolver(null, null, ['CustomAlias' => 'int']);
+
+        $this->assertEquals(Type::int(), $resolver->resolve('CustomAlias'));
+    }
+
     public function testCannotResolveNonStringType()
     {
         $this->expectException(UnsupportedException::class);
