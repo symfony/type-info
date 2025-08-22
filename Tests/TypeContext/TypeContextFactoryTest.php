@@ -186,6 +186,31 @@ class TypeContextFactoryTest extends TestCase
         ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithImportedOnlyTypeAliases::class))->typeAliases);
     }
 
+    public function testCollectTypeAliasesWithExtraTypeAliases()
+    {
+        $typeContextFactory = new TypeContextFactory(new StringTypeResolver(), [
+            'Custom' => Type::int(),
+            'CustomArray' => Type::list(Type::bool()), // will be overridden by the resolved type alias
+        ]);
+
+        $this->assertEquals([
+            'Custom' => Type::int(),
+            'CustomArray' => Type::list(Type::bool()),
+        ], $typeContextFactory->createFromClassName(Dummy::class)->typeAliases);
+
+        $this->assertEquals([
+            'Custom' => Type::int(),
+            'CustomString' => Type::string(),
+            'CustomInt' => Type::int(),
+            'CustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
+            'AliasedCustomInt' => Type::int(),
+            'PsalmCustomString' => Type::string(),
+            'PsalmCustomInt' => Type::int(),
+            'PsalmCustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
+            'PsalmAliasedCustomInt' => Type::int(),
+        ], $typeContextFactory->createFromClassName(DummyWithTypeAliases::class)->typeAliases);
+    }
+
     public function testDoNotCollectTypeAliasesWhenToStringTypeResolver()
     {
         $typeContextFactory = new TypeContextFactory();

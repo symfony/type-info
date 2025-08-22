@@ -44,8 +44,12 @@ final class TypeContextFactory
     private ?Lexer $phpstanLexer = null;
     private ?PhpDocParser $phpstanParser = null;
 
+    /**
+     * @param array<string, string> $extraTypeAliases
+     */
     public function __construct(
         private readonly ?StringTypeResolver $stringTypeResolver = null,
+        private readonly array $extraTypeAliases = [],
     ) {
     }
 
@@ -194,8 +198,10 @@ final class TypeContextFactory
             return [];
         }
 
+        $extraAliases = array_map($this->stringTypeResolver->resolve(...), $this->extraTypeAliases);
+
         if (!$rawDocNode = $reflection->getDocComment()) {
-            return [];
+            return $extraAliases;
         }
 
         $aliases = [];
@@ -229,7 +235,7 @@ final class TypeContextFactory
             $aliases[$tag->value->alias] = (string) $tag->value->type;
         }
 
-        return $this->resolveTypeAliases($aliases, $resolvedAliases, $typeContext);
+        return $this->resolveTypeAliases($aliases, $resolvedAliases, $typeContext) + $extraAliases;
     }
 
     /**
