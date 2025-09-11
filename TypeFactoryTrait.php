@@ -299,9 +299,7 @@ trait TypeFactoryTrait
         foreach ($types as $type) {
             if ($type instanceof NullableType) {
                 $nullableUnion = true;
-                $unionTypes[] = $type->getWrappedType();
-
-                continue;
+                $type = $type->getWrappedType();
             }
 
             if ($type instanceof UnionType) {
