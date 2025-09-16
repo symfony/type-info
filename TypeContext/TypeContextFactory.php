@@ -33,6 +33,7 @@ use Symfony\Component\TypeInfo\TypeResolver\StringTypeResolver;
  *
  * @author Mathias Arlaud <mathias.arlaud@gmail.com>
  * @author Baptiste Leduc <baptiste.leduc@gmail.com>
+ * @author Pierre-Yves Landuré <landure@gmail.com>
  */
 final class TypeContextFactory
 {
@@ -40,6 +41,16 @@ final class TypeContextFactory
      * @var array<class-string, \ReflectionClass>
      */
     private static array $reflectionClassCache = [];
+
+    /**
+     * @var array<string,array<string,TypeContext>
+     */
+    private array $intermediateTypeContextCache = [];
+
+    /**
+     * @var array<string,array<string,TypeContext>
+     */
+    private array $typeContextCache = [];
 
     private ?Lexer $phpstanLexer = null;
     private ?PhpDocParser $phpstanParser = null;
@@ -57,26 +68,7 @@ final class TypeContextFactory
     {
         $declaringClassName ??= $calledClassName;
 
-        $calledClassPath = explode('\\', $calledClassName);
-        $declaringClassPath = explode('\\', $declaringClassName);
-
-        $declaringClassReflection = self::$reflectionClassCache[$declaringClassName] ??= new \ReflectionClass($declaringClassName);
-
-        $typeContext = new TypeContext(
-            end($calledClassPath),
-            end($declaringClassPath),
-            trim($declaringClassReflection->getNamespaceName(), '\\'),
-            $this->collectUses($declaringClassReflection),
-        );
-
-        return new TypeContext(
-            $typeContext->calledClassName,
-            $typeContext->declaringClassName,
-            $typeContext->namespace,
-            $typeContext->uses,
-            $this->collectTemplates($declaringClassReflection, $typeContext),
-            $this->collectTypeAliases($declaringClassReflection, $typeContext),
-        );
+        return $this->typeContextCache[$declaringClassName][$calledClassName] ??= $this->createNewInstanceFromClassName($calledClassName, $declaringClassName);
     }
 
     public function createFromReflection(\Reflector $reflection): ?TypeContext
@@ -94,12 +86,7 @@ final class TypeContextFactory
             return null;
         }
 
-        $typeContext = new TypeContext(
-            $declaringClassReflection->getShortName(),
-            $declaringClassReflection->getShortName(),
-            $declaringClassReflection->getNamespaceName(),
-            $this->collectUses($declaringClassReflection),
-        );
+        $typeContext = $this->createIntermediateTypeContext($declaringClassReflection->getShortName(), $declaringClassReflection);
 
         $templates = match (true) {
             $reflection instanceof \ReflectionFunctionAbstract => $this->collectTemplates($reflection, $typeContext) + $this->collectTemplates($declaringClassReflection, $typeContext),
@@ -114,6 +101,36 @@ final class TypeContextFactory
             $typeContext->uses,
             $templates,
             $this->collectTypeAliases($declaringClassReflection, $typeContext),
+        );
+    }
+
+    private function createNewInstanceFromClassName(string $calledClassName, string $declaringClassName): TypeContext
+    {
+        $calledClassPath = explode('\\', $calledClassName);
+
+        $declaringClassReflection = self::$reflectionClassCache[$declaringClassName] ??= new \ReflectionClass($declaringClassName);
+
+        $typeContext = $this->createIntermediateTypeContext(end($calledClassPath), $declaringClassReflection);
+
+        return new TypeContext(
+            $typeContext->calledClassName,
+            $typeContext->declaringClassName,
+            $typeContext->namespace,
+            $typeContext->uses,
+            $this->collectTemplates($declaringClassReflection, $typeContext),
+            $this->collectTypeAliases($declaringClassReflection, $typeContext),
+        );
+    }
+
+    private function createIntermediateTypeContext(string $calledClassShortName, \ReflectionClass $declaringClassReflection): TypeContext
+    {
+        $declaringClassName = $declaringClassReflection->getName();
+
+        return $this->intermediateTypeContextCache[$declaringClassName][$calledClassShortName] ??= new TypeContext(
+            $calledClassShortName,
+            $declaringClassReflection->getShortName(),
+            trim($declaringClassReflection->getNamespaceName(), '\\'),
+            $this->collectUses($declaringClassReflection),
         );
     }
 
