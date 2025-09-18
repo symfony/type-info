@@ -60,6 +60,13 @@ class TypeContextFactoryTest extends TestCase
         $this->assertSame('Dummy', $typeContext->declaringClassName);
     }
 
+    public function testCacheResultWhenToStringTypeResolver()
+    {
+        $typeContext = $this->typeContextFactory->createFromClassName(Dummy::class, AbstractDummy::class);
+        $cachedtypeContext = $this->typeContextFactory->createFromClassName(Dummy::class, AbstractDummy::class);
+        $this->assertSame($typeContext, $cachedtypeContext);
+    }
+
     public function testCollectNamespace()
     {
         $namespace = 'Symfony\\Component\\TypeInfo\\Tests\\Fixtures';
