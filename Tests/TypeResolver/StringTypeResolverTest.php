@@ -21,6 +21,7 @@ use Symfony\Component\TypeInfo\Tests\Fixtures\DummyCollection;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyEnum;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithConstants;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplates;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplateTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTypeAliases;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeContext\TypeContext;
@@ -202,6 +203,7 @@ class StringTypeResolverTest extends TestCase
         // type aliases
         yield [Type::int(), 'CustomInt', $typeContextFactory->createFromClassName(DummyWithTypeAliases::class)];
         yield [Type::string(), 'CustomString', $typeContextFactory->createFromClassName(DummyWithTypeAliases::class)];
+        yield [Type::template('T'), 'AliasWithTemplate', $typeContextFactory->createFromClassName(DummyWithTemplateTypeAlias::class)];
     }
 
     public function testCannotResolveNonStringType()

@@ -65,12 +65,20 @@ final class TypeContextFactory
             $this->collectUses($declaringClassReflection),
         );
 
-        return new TypeContext(
+        $typeContext = new TypeContext(
             $typeContext->calledClassName,
             $typeContext->declaringClassName,
             $typeContext->namespace,
             $typeContext->uses,
             $this->collectTemplates($declaringClassReflection, $typeContext),
+        );
+
+        return new TypeContext(
+            $typeContext->calledClassName,
+            $typeContext->declaringClassName,
+            $typeContext->namespace,
+            $typeContext->uses,
+            $typeContext->templates,
             $this->collectTypeAliases($declaringClassReflection, $typeContext),
         );
     }
@@ -103,12 +111,20 @@ final class TypeContextFactory
             default => $this->collectTemplates($declaringClassReflection, $typeContext),
         };
 
-        return new TypeContext(
+        $typeContext = new TypeContext(
             $typeContext->calledClassName,
             $typeContext->declaringClassName,
             $typeContext->namespace,
             $typeContext->uses,
             $templates,
+        );
+
+        return new TypeContext(
+            $typeContext->calledClassName,
+            $typeContext->declaringClassName,
+            $typeContext->namespace,
+            $typeContext->uses,
+            $typeContext->templates,
             $this->collectTypeAliases($declaringClassReflection, $typeContext),
         );
     }
