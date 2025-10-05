@@ -14,11 +14,14 @@ namespace Symfony\Component\TypeInfo\Tests\TypeContext;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\TypeInfo\Exception\LogicException;
 use Symfony\Component\TypeInfo\Tests\Fixtures\AbstractDummy;
+use Symfony\Component\TypeInfo\Tests\Fixtures\AnotherNamespace\DummyInDifferentNs;
+use Symfony\Component\TypeInfo\Tests\Fixtures\AnotherNamespace\DummyWithTemplateAndParentInDifferentNs;
 use Symfony\Component\TypeInfo\Tests\Fixtures\Dummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithImportedOnlyTypeAliases;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAliasImport;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithRecursiveTypeAliases;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplateAndParent;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplates;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplateTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTypeAliases;
@@ -138,6 +141,14 @@ class TypeContextFactoryTest extends TestCase
             'U' => Type::mixed(),
             'V' => Type::mixed(),
         ], $this->typeContextFactory->createFromReflection(new \ReflectionParameter([DummyWithTemplates::class, 'getPrice'], 'inCents'))->templates);
+
+        $this->assertEquals([
+            'T' => Type::object(DummyInDifferentNs::class),
+        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithTemplateAndParent::class))->templates);
+
+        $this->assertEquals([
+            'T' => Type::object(DummyInDifferentNs::class),
+        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithTemplateAndParentInDifferentNs::class))->templates);
     }
 
     public function testDoNotCollectTemplatesWhenToStringTypeResolver()
