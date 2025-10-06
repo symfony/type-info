@@ -14,12 +14,16 @@ namespace Symfony\Component\TypeInfo\Tests\TypeContext;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\TypeInfo\Exception\LogicException;
 use Symfony\Component\TypeInfo\Tests\Fixtures\AbstractDummy;
+use Symfony\Component\TypeInfo\Tests\Fixtures\AnotherNamespace\DummyInDifferentNs;
+use Symfony\Component\TypeInfo\Tests\Fixtures\AnotherNamespace\DummyWithTemplateAndParentInDifferentNs;
 use Symfony\Component\TypeInfo\Tests\Fixtures\Dummy;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithImportedOnlyTypeAliases;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithInvalidTypeAliasImport;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithRecursiveTypeAliases;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplateAndParent;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplates;
+use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTemplateTypeAlias;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTypeAliases;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithTypeAliasImportedFromInvalidClassName;
 use Symfony\Component\TypeInfo\Tests\Fixtures\DummyWithUses;
@@ -144,6 +148,14 @@ class TypeContextFactoryTest extends TestCase
             'U' => Type::mixed(),
             'V' => Type::mixed(),
         ], $this->typeContextFactory->createFromReflection(new \ReflectionParameter([DummyWithTemplates::class, 'getPrice'], 'inCents'))->templates);
+
+        $this->assertEquals([
+            'T' => Type::object(DummyInDifferentNs::class),
+        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithTemplateAndParent::class))->templates);
+
+        $this->assertEquals([
+            'T' => Type::object(DummyInDifferentNs::class),
+        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithTemplateAndParentInDifferentNs::class))->templates);
     }
 
     public function testDoNotCollectTemplatesWhenToStringTypeResolver()
@@ -153,9 +165,23 @@ class TypeContextFactoryTest extends TestCase
         $this->assertEquals([], $typeContextFactory->createFromClassName(DummyWithTemplates::class)->templates);
     }
 
-    public function testCollectTypeAliases()
+    /**
+     * @dataProvider collectTypeAliasesDataProvider
+     *
+     * @param array<string, Type> $expectedTypeAliases
+     * @param class-string        $className
+     */
+    public function testCollectTypeAliases(array $expectedTypeAliases, string $className)
     {
-        $this->assertEquals([
+        $this->assertEquals($expectedTypeAliases, $this->typeContextFactory->createFromClassName($className)->typeAliases);
+    }
+
+    /**
+     * @return iterable<array{0: array<string, Type>, 1: class-string}>
+     */
+    public static function collectTypeAliasesDataProvider(): iterable
+    {
+        yield [[
             'CustomString' => Type::string(),
             'CustomInt' => Type::int(),
             'CustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
@@ -164,9 +190,9 @@ class TypeContextFactoryTest extends TestCase
             'PsalmCustomInt' => Type::int(),
             'PsalmCustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
             'PsalmAliasedCustomInt' => Type::int(),
-        ], $this->typeContextFactory->createFromClassName(DummyWithTypeAliases::class)->typeAliases);
+        ], DummyWithTypeAliases::class];
 
-        $this->assertEquals([
+        yield [[
             'CustomString' => Type::string(),
             'CustomInt' => Type::int(),
             'CustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
@@ -175,9 +201,9 @@ class TypeContextFactoryTest extends TestCase
             'PsalmCustomInt' => Type::int(),
             'PsalmCustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
             'PsalmAliasedCustomInt' => Type::int(),
-        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithTypeAliases::class))->typeAliases);
+        ], DummyWithTypeAliases::class];
 
-        $this->assertEquals([
+        yield [[
             'CustomString' => Type::string(),
             'CustomInt' => Type::int(),
             'CustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
@@ -186,11 +212,10 @@ class TypeContextFactoryTest extends TestCase
             'PsalmCustomInt' => Type::int(),
             'PsalmCustomArray' => Type::arrayShape([0 => Type::int(), 1 => Type::string(), 2 => Type::bool()]),
             'PsalmAliasedCustomInt' => Type::int(),
-        ], $this->typeContextFactory->createFromReflection(new \ReflectionProperty(DummyWithTypeAliases::class, 'localAlias'))->typeAliases);
+        ], DummyWithTypeAliases::class];
 
-        $this->assertEquals([
-            'CustomInt' => Type::int(),
-        ], $this->typeContextFactory->createFromReflection(new \ReflectionClass(DummyWithImportedOnlyTypeAliases::class))->typeAliases);
+        yield [['CustomInt' => Type::int()], DummyWithImportedOnlyTypeAliases::class];
+        yield [['AliasWithTemplate' => Type::template('T')], DummyWithTemplateTypeAlias::class];
     }
 
     public function testCollectTypeAliasesWithExtraTypeAliases()
