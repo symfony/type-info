@@ -224,6 +224,12 @@ class TypeFactoryTest extends TestCase
         ), Type::arrayShape(['foo' => Type::bool()], extraKeyType: Type::string(), extraValueType: Type::bool()));
     }
 
+    public function testCreateArrayShapeWithCallableKey()
+    {
+        $arrayShape = new ArrayShapeType(['substr' => ['type' => Type::string(), 'optional' => false]]);
+        $this->assertEquals(Type::string(), $arrayShape->getCollectionKeyType());
+    }
+
     public function testCreateArrayKey()
     {
         $this->assertEquals(new UnionType(Type::int(), Type::string()), Type::arrayKey());
