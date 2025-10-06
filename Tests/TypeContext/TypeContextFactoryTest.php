@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\TypeInfo\Tests\TypeContext;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\TypeInfo\Exception\LogicException;
 use Symfony\Component\TypeInfo\Tests\Fixtures\AbstractDummy;
@@ -166,11 +167,10 @@ class TypeContextFactoryTest extends TestCase
     }
 
     /**
-     * @dataProvider collectTypeAliasesDataProvider
-     *
      * @param array<string, Type> $expectedTypeAliases
      * @param class-string        $className
      */
+    #[DataProvider('collectTypeAliasesDataProvider')]
     public function testCollectTypeAliases(array $expectedTypeAliases, string $className)
     {
         $this->assertEquals($expectedTypeAliases, $this->typeContextFactory->createFromClassName($className)->typeAliases);
