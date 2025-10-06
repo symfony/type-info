@@ -114,17 +114,18 @@ final class TypeContextFactory
 
     private function createNewInstanceFromClassName(string $calledClassName, string $declaringClassName): TypeContext
     {
-        $calledClassPath = explode('\\', $calledClassName);
-
+        $calledClassNameReflection = self::$reflectionClassCache[$calledClassName] ??= new \ReflectionClass($calledClassName);
         $declaringClassReflection = self::$reflectionClassCache[$declaringClassName] ??= new \ReflectionClass($declaringClassName);
 
-        $typeContext = $this->createIntermediateTypeContext(end($calledClassPath), $declaringClassReflection);
+        $calledClassTypeContext = $this->createIntermediateTypeContext($calledClassNameReflection->getShortName(), $calledClassNameReflection);
+        $typeContext = $this->createIntermediateTypeContext($calledClassNameReflection->getShortName(), $declaringClassReflection);
+
         $typeContext = new TypeContext(
             $typeContext->calledClassName,
             $typeContext->declaringClassName,
             $typeContext->namespace,
             $typeContext->uses,
-            $this->collectTemplates($declaringClassReflection, $typeContext),
+            $this->collectTemplates($calledClassNameReflection, $calledClassTypeContext) + $this->collectTemplates($declaringClassReflection, $typeContext),
         );
 
         return new TypeContext(
