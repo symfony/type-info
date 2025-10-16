@@ -160,7 +160,7 @@ final class TypeContextFactory
             return [];
         }
 
-        if (false === $lines = @file($fileName, \FILE_IGNORE_NEW_LINES)) {
+        if (false === $lines = @file($fileName, \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES)) {
             throw new RuntimeException(\sprintf('Unable to read file "%s".', $fileName));
         }
 
