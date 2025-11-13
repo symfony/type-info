@@ -73,7 +73,16 @@ class StringTypeResolverTest extends TestCase
         yield [Type::callable(), 'callable(string, int): mixed'];
 
         // array
-        yield [Type::list(Type::bool()), 'bool[]'];
+        yield [Type::array(Type::bool()), 'bool[]'];
+        yield [Type::array(Type::bool()), 'array<bool>'];
+        yield [Type::array(Type::bool(), Type::int()), 'array<int, bool>'];
+        yield [Type::array(Type::bool(), Type::arrayKey()), 'array<array-key, bool>'];
+        yield [Type::array(Type::bool(), Type::arrayKey()), 'array<int|string, bool>'];
+        yield [Type::array(Type::bool(), Type::arrayKey()), 'non-empty-array<int|string, bool>'];
+
+        // list
+        yield [Type::list(Type::bool()), 'list<bool>'];
+        yield [Type::list(Type::bool()), 'non-empty-list<bool>'];
 
         // array shape
         yield [Type::arrayShape(['foo' => Type::true(), 1 => Type::false()]), 'array{foo: true, 1: false}'];
@@ -252,5 +261,29 @@ class StringTypeResolverTest extends TestCase
     {
         $this->expectException(UnsupportedException::class);
         $this->resolver->resolve('value-of<int>');
+    }
+
+    public function testCannotResolveListWithKeyType()
+    {
+        $this->expectException(UnsupportedException::class);
+        $this->resolver->resolve('list<int, string>');
+    }
+
+    public function testCannotResolveInvalidNonEmptyListWithKeyType()
+    {
+        $this->expectException(UnsupportedException::class);
+        $this->resolver->resolve('non-empty-list<int, string>');
+    }
+
+    public function testCannotResolveInvalidArrayKeyType()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->resolver->resolve('array<mixed, string>');
+    }
+
+    public function testCannotResolveInvalidUnionArrayKeyType()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->resolver->resolve('array<int|mixed, string>');
     }
 }

@@ -49,6 +49,16 @@ class CollectionType extends Type implements WrappingTypeInterface
             if (!$keyType instanceof BuiltinType || TypeIdentifier::INT !== $keyType->getTypeIdentifier()) {
                 throw new InvalidArgumentException(\sprintf('"%s" is not a valid list key type.', (string) $keyType));
             }
+        } elseif ($type instanceof GenericType && $type->getWrappedType() instanceof BuiltinType && TypeIdentifier::ARRAY === $type->getWrappedType()->getTypeIdentifier()) {
+            $keyType = $this->getCollectionKeyType();
+
+            $keyTypes = $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType];
+
+            foreach ($keyTypes as $type) {
+                if (!$type instanceof BuiltinType || !\in_array($type->getTypeIdentifier(), [TypeIdentifier::INT, TypeIdentifier::STRING], true)) {
+                    throw new InvalidArgumentException(\sprintf('"%s" is not a valid array key type.', (string) $keyType));
+                }
+            }
         }
     }
 
