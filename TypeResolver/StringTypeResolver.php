@@ -106,7 +106,7 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if ($node instanceof ArrayTypeNode) {
-            return Type::list($this->getTypeFromNode($node->type, $typeContext));
+            return Type::array($this->getTypeFromNode($node->type, $typeContext));
         }
 
         if ($node instanceof ArrayShapeNode) {
@@ -269,6 +269,10 @@ final class StringTypeResolver implements TypeResolverInterface
                 if (1 === \count($variableTypes)) {
                     return new CollectionType(Type::generic($type, $keyType, $variableTypes[0]), $asList);
                 } elseif (2 === \count($variableTypes)) {
+                    if ($asList) {
+                        throw new \DomainException(\sprintf('"%s" type cannot have a key type defined.', $node->type));
+                    }
+
                     return Type::collection($type, $variableTypes[1], $variableTypes[0], $asList);
                 }
             }
