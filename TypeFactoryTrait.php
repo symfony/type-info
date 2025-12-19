@@ -290,7 +290,7 @@ trait TypeFactoryTrait
         $unionTypes = [];
 
         $nullableUnion = false;
-        $isNullable = fn (Type $type): bool => $type instanceof BuiltinType && TypeIdentifier::NULL === $type->getTypeIdentifier();
+        $isNullable = static fn (Type $type): bool => $type instanceof BuiltinType && TypeIdentifier::NULL === $type->getTypeIdentifier();
 
         foreach ($types as $type) {
             if ($type instanceof NullableType) {
