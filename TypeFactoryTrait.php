@@ -19,6 +19,7 @@ use Symfony\Component\TypeInfo\Type\EnumType;
 use Symfony\Component\TypeInfo\Type\GenericType;
 use Symfony\Component\TypeInfo\Type\IntersectionType;
 use Symfony\Component\TypeInfo\Type\NullableType;
+use Symfony\Component\TypeInfo\Type\ObjectShapeType;
 use Symfony\Component\TypeInfo\Type\ObjectType;
 use Symfony\Component\TypeInfo\Type\TemplateType;
 use Symfony\Component\TypeInfo\Type\UnionType;
@@ -227,6 +228,20 @@ trait TypeFactoryTrait
     public static function object(?string $className = null): BuiltinType|ObjectType
     {
         return null !== $className ? new ObjectType($className) : new BuiltinType(TypeIdentifier::OBJECT);
+    }
+
+    /**
+     * @param array<string, array{type: Type, optional?: bool}|Type> $shape
+     */
+    public static function objectShape(array $shape): ObjectShapeType
+    {
+        $shape = array_map(static function (array|Type $item): array {
+            return $item instanceof Type
+                ? ['type' => $item, 'optional' => false]
+                : ['type' => $item['type'], 'optional' => $item['optional'] ?? false];
+        }, $shape);
+
+        return new ObjectShapeType($shape);
     }
 
     /**

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Add `ObjectShapeType` to represent the exact shape of an anonymous object
+
 8.0
 ---
 
