@@ -53,22 +53,19 @@ final class TypeContextFactory
     {
         $declaringClassName ??= $calledClassName;
 
-        $calledClassPath = explode('\\', $calledClassName);
-        $declaringClassPath = explode('\\', $declaringClassName);
-
         $calledClassNameReflection = self::$reflectionClassCache[$calledClassName] ??= new \ReflectionClass($calledClassName);
         $declaringClassReflection = self::$reflectionClassCache[$declaringClassName] ??= new \ReflectionClass($declaringClassName);
 
         $calledClassTypeContext = new TypeContext(
-            end($calledClassPath),
-            end($declaringClassPath),
+            $calledClassName,
+            $declaringClassName,
             trim($calledClassNameReflection->getNamespaceName(), '\\'),
             $this->collectUses($calledClassNameReflection),
         );
 
         $typeContext = new TypeContext(
-            end($calledClassPath),
-            end($declaringClassPath),
+            $calledClassName,
+            $declaringClassName,
             trim($declaringClassReflection->getNamespaceName(), '\\'),
             $this->collectUses($declaringClassReflection),
         );
@@ -107,8 +104,8 @@ final class TypeContextFactory
         }
 
         $typeContext = new TypeContext(
-            $declaringClassReflection->getShortName(),
-            $declaringClassReflection->getShortName(),
+            $declaringClassReflection->getName(),
+            $declaringClassReflection->getName(),
             $declaringClassReflection->getNamespaceName(),
             $this->collectUses($declaringClassReflection),
         );
