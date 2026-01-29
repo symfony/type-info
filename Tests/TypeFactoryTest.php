@@ -24,6 +24,7 @@ use Symfony\Component\TypeInfo\Type\EnumType;
 use Symfony\Component\TypeInfo\Type\GenericType;
 use Symfony\Component\TypeInfo\Type\IntersectionType;
 use Symfony\Component\TypeInfo\Type\NullableType;
+use Symfony\Component\TypeInfo\Type\ObjectShapeType;
 use Symfony\Component\TypeInfo\Type\ObjectType;
 use Symfony\Component\TypeInfo\Type\TemplateType;
 use Symfony\Component\TypeInfo\Type\UnionType;
@@ -228,6 +229,13 @@ class TypeFactoryTest extends TestCase
     {
         $arrayShape = new ArrayShapeType(['substr' => ['type' => Type::string(), 'optional' => false]]);
         $this->assertEquals(Type::string(), $arrayShape->getCollectionKeyType());
+    }
+
+    public function testCreateObjectShape()
+    {
+        $this->assertEquals(new ObjectShapeType(['foo' => ['type' => Type::bool(), 'optional' => true]]), Type::objectShape(['foo' => ['type' => Type::bool(), 'optional' => true]]));
+        $this->assertEquals(new ObjectShapeType(['foo' => ['type' => Type::bool(), 'optional' => false]]), Type::objectShape(['foo' => Type::bool()]));
+        $this->assertEquals(new ObjectShapeType(['substr' => ['type' => Type::bool(), 'optional' => false]]), Type::objectShape(['substr' => Type::bool()]));
     }
 
     public function testCreateArrayKey()
