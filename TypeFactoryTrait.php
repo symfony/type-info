@@ -233,11 +233,12 @@ trait TypeFactoryTrait
      */
     public static function objectShape(array $shape): ObjectShapeType
     {
-        $shape = array_map(static function (array|Type $item): array {
-            return $item instanceof Type
+        $shape = array_map(
+            static fn (array|Type $item): array => $item instanceof Type
                 ? ['type' => $item, 'optional' => false]
-                : ['type' => $item['type'], 'optional' => $item['optional'] ?? false];
-        }, $shape);
+                : ['type' => $item['type'], 'optional' => $item['optional'] ?? false],
+            $shape
+        );
 
         return new ObjectShapeType($shape);
     }
