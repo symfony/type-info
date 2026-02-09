@@ -314,7 +314,7 @@ trait TypeFactoryTrait
 
             if ($type instanceof UnionType) {
                 foreach ($type->getTypes() as $unionType) {
-                    if ($isNullable($type)) {
+                    if ($isNullable($unionType)) {
                         $nullableUnion = true;
 
                         continue;
