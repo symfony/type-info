@@ -179,6 +179,24 @@ class TypeFactoryTest extends TestCase
         $this->assertEquals(new UnionType(new BuiltinType(TypeIdentifier::INT), new BuiltinType(TypeIdentifier::STRING)), Type::union(Type::int(), Type::union(Type::int(), Type::string())));
     }
 
+    public function testUnionWithNestedNullTypeIsProperlyNullable()
+    {
+        $nestedUnion = Type::union(Type::int(), Type::string(), Type::null());
+        $result = Type::union($nestedUnion, Type::float());
+
+        $this->assertInstanceOf(NullableType::class, $result);
+
+        $wrappedType = $result->getWrappedType();
+        $this->assertInstanceOf(UnionType::class, $wrappedType);
+
+        $types = $wrappedType->getTypes();
+        $this->assertCount(3, $types);
+
+        $typeStrings = array_map(static fn ($t) => (string) $t, $types);
+        sort($typeStrings);
+        $this->assertSame(['float', 'int', 'string'], $typeStrings);
+    }
+
     public function testCreateIntersection()
     {
         $this->assertEquals(new IntersectionType(new ObjectType(\DateTime::class), new ObjectType(self::class)), Type::intersection(Type::object(\DateTime::class), Type::object(self::class)));
