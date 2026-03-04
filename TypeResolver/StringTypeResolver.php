@@ -100,7 +100,7 @@ final class StringTypeResolver implements TypeResolverInterface
 
     private function getTypeFromNode(TypeNode $node, ?TypeContext $typeContext): Type
     {
-        $typeIsCollectionObject = fn (Type $type): bool => $type->isIdentifiedBy(\Traversable::class) || $type->isIdentifiedBy(\ArrayAccess::class);
+        $typeIsCollectionObject = static fn (Type $type): bool => $type->isIdentifiedBy(\Traversable::class) || $type->isIdentifiedBy(\ArrayAccess::class);
 
         if ($node instanceof CallableTypeNode) {
             return Type::callable();
@@ -344,7 +344,7 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if (self::$classExistCache[$className]) {
-            if (is_subclass_of($className, \UnitEnum::class)) {
+            if (is_subclass_of($className, \UnitEnum::class) && !interface_exists($className)) {
                 return Type::enum($className);
             }
 
