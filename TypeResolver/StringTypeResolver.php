@@ -352,7 +352,7 @@ final class StringTypeResolver implements TypeResolverInterface
         }
 
         if (self::$classExistCache[$className]) {
-            if (is_subclass_of($className, \UnitEnum::class)) {
+            if (is_subclass_of($className, \UnitEnum::class) && !interface_exists($className)) {
                 return Type::enum($className);
             }
 
