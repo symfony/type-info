@@ -43,6 +43,7 @@ use Symfony\Component\TypeInfo\Type\BackedEnumType;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
 use Symfony\Component\TypeInfo\Type\CollectionType;
 use Symfony\Component\TypeInfo\Type\GenericType;
+use Symfony\Component\TypeInfo\Type\ObjectType;
 use Symfony\Component\TypeInfo\TypeContext\TypeContext;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -144,8 +145,17 @@ final class StringTypeResolver implements TypeResolverInterface
                     'self' => $typeContext->getDeclaringClass(),
                     'static' => $typeContext->getCalledClass(),
                     'parent' => $typeContext->getParentClass(),
-                    default => $node->constExpr->className,
+                    default => null,
                 };
+
+                if (null === $className) {
+                    $classType = $this->resolveCustomIdentifier($node->constExpr->className, $typeContext);
+                    if (!$classType instanceof ObjectType) {
+                        return Type::mixed();
+                    }
+
+                    $className = $classType->getClassName();
+                }
 
                 if (!class_exists($className)) {
                     return Type::mixed();
