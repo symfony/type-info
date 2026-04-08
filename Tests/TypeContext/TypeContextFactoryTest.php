@@ -92,8 +92,9 @@ class TypeContextFactoryTest extends TestCase
 
         $uses = [
             'Type' => Type::class,
-            \DateTimeInterface::class => '\\'.\DateTimeInterface::class,
-            'DateTime' => '\\'.\DateTimeImmutable::class,
+            'TI' => 'Symfony\\Component\\TypeInfo\\TypeIdentifier',
+            \DateTimeInterface::class => \DateTimeInterface::class,
+            'DateTime' => \DateTimeImmutable::class,
         ];
 
         $this->assertSame($uses, $this->typeContextFactory->createFromClassName(DummyWithUses::class)->uses);
@@ -110,8 +111,8 @@ class TypeContextFactoryTest extends TestCase
 
         $uses = [
             'Type' => Type::class,
-            \DateTimeInterface::class => '\\'.\DateTimeInterface::class,
-            'DateTime' => '\\'.\DateTimeImmutable::class,
+            \DateTimeInterface::class => \DateTimeInterface::class,
+            'DateTime' => \DateTimeImmutable::class,
         ];
 
         $this->assertSame($uses, $this->typeContextFactory->createFromClassName(DummyWithUsesWindowsLineEndings::class)->uses);
