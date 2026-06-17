@@ -249,8 +249,24 @@ final class TypeContextFactory
             return [];
         }
 
+        $docNode = $this->getPhpDocNode($rawDocNode);
+
+        $templateTags = [
+            '@template',
+            '@template-covariant',
+            '@psalm-template',
+            '@psalm-template-covariant',
+            '@phpstan-template',
+            '@phpstan-template-covariant',
+        ];
+
+        $tags = [];
+        foreach ($templateTags as $tagName) {
+            $tags = [...$tags, ...$docNode->getTagsByName($tagName)];
+        }
+
         $templates = [];
-        foreach ($this->getPhpDocNode($rawDocNode)->getTagsByName('@template') + $this->getPhpDocNode($rawDocNode)->getTagsByName('@phpstan-template') + $this->getPhpDocNode($rawDocNode)->getTagsByName('@psalm-template') as $tag) {
+        foreach ($tags as $tag) {
             if (!$tag->value instanceof TemplateTagValueNode) {
                 continue;
             }

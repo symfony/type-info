@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.2
+---
+
+ * Add support for `@template-covariant` and its vendor prefixed synonyms
+
 8.1
 ---
 
