@@ -60,6 +60,11 @@ final class TemplateType extends Type implements WrappingTypeInterface
         return $this->getWrappedType()->isSatisfiedBy($specification);
     }
 
+    public function accepts(mixed $value): bool
+    {
+        return $this->bound->accepts($value);
+    }
+
     public function __toString(): string
     {
         return $this->name;
